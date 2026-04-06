@@ -117,34 +117,6 @@ public class ShipPartBridge : MonoBehaviour
 		}
 		
 	}
-
-	private void Update()
-	{
-		if (!handleGear) return;
-		if (gearTimer > 0)
-		{
-			gearTimer -= Time.deltaTime;
-			return;
-		}
-		var pilot = aircraft?.pilots[0];
-		if (pilot == null) return;
-		if (pilot.currentState is PilotPlayerState pilotPlayerState)
-		{
-			if (pilotPlayerState.player.GetButtonDown("Gear"))
-			{
-				if (pilot.aircraft.gearState == LandingGear.GearState.LockedExtended)
-				{
-					pilot.aircraft.SetGear(deployed: false);
-				}
-				else if (pilot.aircraft.gearState == LandingGear.GearState.LockedRetracted)
-				{
-					pilot.aircraft.SetGear(deployed: true);
-				}
-
-				gearTimer = 1f;
-			}
-		}
-	}
 	
 	public void SetComplexPhysics()
 	{

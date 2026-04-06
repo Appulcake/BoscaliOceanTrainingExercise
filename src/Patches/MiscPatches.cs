@@ -320,6 +320,64 @@ public static class PilotPlayerStatePatches
         {
             __instance.pilot.aircraft.Countermeasures(true, __instance.pilot.aircraft.countermeasureManager.activeIndex);
         }
+
+        if (__instance.player.GetButtonDown("Gear"))
+        {
+            if (__instance.pilot.aircraft.gearState == LandingGear.GearState.LockedExtended)
+            {
+                __instance.pilot.aircraft.SetGear(deployed: false);
+            }
+            else if (__instance.pilot.aircraft.gearState == LandingGear.GearState.LockedRetracted)
+            {
+                __instance.pilot.aircraft.SetGear(deployed: true);
+            }
+        }
+    }
+}
+
+[HarmonyPatch(typeof(RadialMenuAction))]
+public static class RadialMenuActionPatches
+{
+    [HarmonyPatch(nameof(RadialMenuAction.TriggerAction))]
+    [HarmonyPostfix]
+    private static void TriggerAction_Postfix(RadialMenuAction __instance, Aircraft aircraft)
+    {
+        if (!ModAssets.i.shipDefinitions.Contains(aircraft.definition)) return;
+        switch (__instance.actionType)
+        {
+            case RadialMenuAction.ActionType.Gear:
+                if (aircraft.gearState == LandingGear.GearState.LockedExtended)
+                {
+                    aircraft.SetGear(deployed: false);
+                }
+                if (aircraft.gearState == LandingGear.GearState.LockedRetracted)
+                {
+                    aircraft.SetGear(deployed: true);
+                }
+                break;
+            case RadialMenuAction.ActionType.Eject:
+                break;
+            case RadialMenuAction.ActionType.Radar:
+                break;
+            case RadialMenuAction.ActionType.NavLights:
+                break;
+            case RadialMenuAction.ActionType.FlightAssist:
+                break;
+            case RadialMenuAction.ActionType.AutoHover:
+                break;
+            case RadialMenuAction.ActionType.Engine:
+                break;
+            case RadialMenuAction.ActionType.Nightvis:
+                break;
+            case RadialMenuAction.ActionType.TurretAuto:
+                break;
+            case RadialMenuAction.ActionType.SelectWeapon:
+                break;
+            case RadialMenuAction.ActionType.LinkGuns:
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -427,6 +485,17 @@ public static class FactionHQPatches
         
         return false;
     }  
+}
+
+[HarmonyPatch(typeof(Pilot))]
+public static class PilotPatches
+{
+    [HarmonyPatch(nameof(Pilot.ApplyDamage))]
+    private static void ApplyDamage_Prefix(Pilot __instance, ref float impactDamage)
+    {
+        if (__instance.aircraft != null && ModAssets.i.shipDefinitions.Contains(__instance.aircraft.definition))
+            impactDamage = 0f;
+    }
 }
 
 public static class TransformExtensions

@@ -29,7 +29,6 @@ public class ResupplyController : NetworkBehaviour
 		if (player.GetButtonDown("Call Resupply"))
 		{
 			CmdRequestResupply();
-			resupplyCalled = true;
 		}
 	}
 	
@@ -38,6 +37,7 @@ public class ResupplyController : NetworkBehaviour
 	{
 		if (resupplyCalled) return;
 		StartCoroutine(ResupplyCoroutine());
+		resupplyCalled = true;
 	}
 
 	private IEnumerator ResupplyCoroutine()

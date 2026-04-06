@@ -88,20 +88,24 @@ public class FOBManager : NetworkBehaviour
         {
             GameObject go = Instantiate(GameAssets.i.airbasePrefab, Datum.origin);
             string uname = $"FOB_{aircraft.Player.PlayerName}_{Time.time}";
+            var displayName = $"FOB: {aircraft.Player.PlayerName}";
             go.name = uname; // create unique name
             var filter = go.AddComponent<AirbaseAIFilter>();
             filter.AddAllowedKey("UtilityHelo1");
             filter.AddAllowedKey("AttackHelo1");
             filter.AddAllowedKey("QuadVTOL1");
             airbase = go.GetComponent<Airbase>();
-            airbase.transform.position = transform.position;
+            Plugin.Logger.LogInfo(center);
+            airbase.transform.position = new GlobalPosition(center.x, center.y + 10f, center.z).ToLocalPosition();
+            airbase.aircraftSelectionTransform = airbase.transform;
             airbase.center.localPosition = Vector3.zero;
             airbase.airbaseSettings.CaptureRange = 100f;
             airbase.SavedAirbase.UniqueName = uname;
-            airbase.SavedAirbase.DisplayName = $"FOB: {aircraft.Player.PlayerName}";
+            airbase.SavedAirbase.DisplayName = displayName;
             airbase.capture.SetCapturable(true);
             airbase.CaptureFaction(aircraft.NetworkHQ);
             NetworkManagerNuclearOption.i.ServerObjectManager.Spawn(airbase.Identity);
+            RpcFinalizeFOB(airbase, center, displayName);
         }
         
         for (int i = 0; i < indices.Length; i++)
@@ -112,12 +116,7 @@ public class FOBManager : NetworkBehaviour
             var data = availableFOBUnits[dataIndex];
             var gp = new GlobalPosition(positions[i].x, positions[i].y, positions[i].z);
             var spawnedObj = data.SpawnUnit(gp.ToLocalPosition(), rotations[i], Vector3.zero, aircraft, out var spawned);
-
-            if (spawnAirbase)
-            {
-                airbase.transform.position = new GlobalPosition(center.x, center.y, center.z).ToLocalPosition();
-                airbase.aircraftSelectionTransform = airbase.transform;
-            }
+            
             if (spawnedObj != null)
             {
                 var building = spawnedObj.GetComponent<Building>();
@@ -127,6 +126,15 @@ public class FOBManager : NetworkBehaviour
                 }
             }
         }
+    }
+
+    [ClientRpc]
+    private void RpcFinalizeFOB(Airbase airbase, Vector3 center, string displayName)
+    {
+        airbase.transform.position = new GlobalPosition(center.x, center.y + 10f, center.z).ToLocalPosition();
+        airbase.aircraftSelectionTransform = airbase.transform;
+        airbase.center.localPosition = Vector3.zero;
+        airbase.SavedAirbase.DisplayName = displayName;
     }
     
     [ServerRpc]

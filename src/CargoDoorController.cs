@@ -111,27 +111,7 @@ namespace NOComponentWIP
                 if (door != null) door.UpdateAnimation(amount, opening);
             }
         }
-
-        private void Update()
-        {
-            var pilot = aircraft?.pilots[0];
-            if (pilot == null) return;
-            if (pilot.currentState is PilotPlayerState pilotPlayerState)
-            {
-                if (pilotPlayerState.player.GetButtonDown("Gear"))
-                {
-                    if (pilot.aircraft.gearState == LandingGear.GearState.LockedExtended)
-                    {
-                        pilot.aircraft.SetGear(deployed: false);
-                    }
-                    if (pilot.aircraft.gearState == LandingGear.GearState.LockedRetracted)
-                    {
-                        pilot.aircraft.SetGear(deployed: true);
-                    }
-                }
-            }
-        }
-
+        
         public bool IsOpen()
         {
             return currentOpenAmount > 0.9f;
