@@ -17,10 +17,11 @@
 
 - take a look at new patches to see what might break
 - guns are funky in mp perhaps, might not be a bote issue
-- check turret raycast logic
+- ~~check turret raycast logic~~
 
 ## additions
 
+- escort spawning
 - increase missile firerate?
 - unit costs
 - top speed throttle "afterburner"

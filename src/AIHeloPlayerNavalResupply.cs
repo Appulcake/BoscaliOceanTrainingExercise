@@ -42,7 +42,6 @@ public class AIHeloPlayerNavalResupply : AIHeloTransportState
 		if (resupply.targetUnit == null) return true;
 
 		if (Time.timeSinceLevelLoad - resupply.lastLandingSpotCheck < 3f) return false;
-		Debug.Log("Resupply Patch:");
 		foreach (WeaponStation ws in resupply.aircraft.weaponStations)
 		{
 			if (ws.WeaponInfo.cargo)
@@ -53,14 +52,13 @@ public class AIHeloPlayerNavalResupply : AIHeloTransportState
 		}
 
 		if (!resupply.aircraft.weaponManager.currentWeaponStation.WeaponInfo.rearmShip) return true; //before time set to allow base ai to handle if this is not a ship rearm somehow
-		Debug.Log("Resupply Patch Complete!");
 		resupply.lastLandingSpotCheck = Time.timeSinceLevelLoad;
 		resupply.pilot.flightInfo.EnemyContact = true;
 
 		resupply.transportDestination.validMission = true;
 		UpdatePlayerLZ(ref resupply.transportDestination, resupply.aircraft, resupply.targetUnit);
 		resupply.transportMode = TransportMode.NavalSupply;
-		resupply.stateDisplayName = "Delivering Naval Supplies";
+		resupply.stateDisplayName = $"Delivering Naval Supplies to player: {resupply.aircraft.Player.PlayerName}";
 		return false;
 	}
 }

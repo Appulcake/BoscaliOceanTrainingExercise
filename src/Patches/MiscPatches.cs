@@ -213,7 +213,7 @@ public static class TurretPatches
     {
         if (__instance.aimSafetyWeapon is not Gun gun) return;
 
-        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out _, 20f, -8193))
+        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out _, 200f, -8193))
         {
             __instance.aimSafetyWeapon.Safety = true;
         }

@@ -101,7 +101,7 @@ public class WaitUntilOrTimeout(System.Func<bool> predicate, float timeout) : Cu
 	}
 }
 
-public static class Extensions
+public static class HQExtensions
 {
 	public static bool GetNearestAircraftCapableAirbase(this FactionHQ hq, Vector3 position, AircraftDefinition[] definitions, out Airbase validAirbase)
 	{
