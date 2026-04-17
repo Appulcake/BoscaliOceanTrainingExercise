@@ -35,7 +35,8 @@ public static class Mod_Input
 		"Next Unit",
 		"Previous Unit",
 		"Call Resupply",
-		"Select/Deselect FOB"
+		"Select/Deselect FOB",
+		"Open Control UI"
 	];
 	
 	[HarmonyPatch(typeof(InputManager_Base), nameof(InputManager_Base.Awake))]

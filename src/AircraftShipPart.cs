@@ -6,6 +6,8 @@ namespace NOComponentWIP;
 
 public class AircraftShipPart : ShipPart
 {
+	[HideInInspector] public float originalHitPoints;
+	
 	[SerializeField]
 	private PartJoint[] joints;
 	
@@ -16,6 +18,7 @@ public class AircraftShipPart : ShipPart
 	{
         BaseReversePatches.UnitPartAwake(this);
         enabled = false;
+        originalHitPoints = hitPoints;
         
         var collider = GetComponent<Collider>();
         bounds = collider.bounds;
@@ -31,8 +34,8 @@ public class AircraftShipPart : ShipPart
         if (bridge != null)
         {
             bridge.parts.Add(this);
-            DamageControlActive = false;
-            DamageControlDelay /= Mathf.Clamp(bridge.aircraft.skill, 0.1f, 1f);
+            damageControlActive = false;
+            damageControlDelay /= Mathf.Clamp(bridge.aircraft.skill, 0.1f, 1f);
         }
         
         if (forceTransform == null) forceTransform = transform;

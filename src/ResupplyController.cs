@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Mirage;
+using NOComponentWIP.Patches;
 using UnityEngine;
 
 namespace NOComponentWIP;
@@ -98,33 +99,5 @@ public class WaitUntilOrTimeout(System.Func<bool> predicate, float timeout) : Cu
 
 			return true;
 		}
-	}
-}
-
-public static class HQExtensions
-{
-	public static bool GetNearestAircraftCapableAirbase(this FactionHQ hq, Vector3 position, AircraftDefinition[] definitions, out Airbase validAirbase)
-	{
-		validAirbase = null;
-		if (hq == null) return false;
-		
-		var sortedBases = hq.airbasesUnsorted
-			.Select(item => item.Value)
-			.Where(ab => ab != null && !ab.disabled && ab.CurrentHQ == hq)
-			.OrderBy(ab => Vector3.Distance(position, ab.transform.position));
-
-		foreach (Airbase airbase in sortedBases)
-		{
-			foreach (var hangar in airbase.hangars)
-			{
-				if (hangar != null && !hangar.Disabled && hangar.availableAircraft.Any(definitions.Contains))
-				{
-					validAirbase = airbase;
-					return true; 
-				}
-			}
-		}
-
-		return false;
 	}
 }

@@ -18,15 +18,18 @@
 - take a look at new patches to see what might break
 - guns are funky in mp perhaps, might not be a bote issue
 - ~~check turret raycast logic~~
+- rename bote missiles
+- phased array lasers
 
 ## additions
+
 
 - escort spawning
 - increase missile firerate?
 - unit costs
 - top speed throttle "afterburner"
 - swap to/from AI?
-- disembarking
+- ~~disembarking~~
 - fob for aircraft?
 - disembark notice
 - damage control UI

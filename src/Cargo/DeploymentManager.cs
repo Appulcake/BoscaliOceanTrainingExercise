@@ -156,7 +156,6 @@ public class DeploymentManager : NetworkBehaviour
         }
     }
     
-
     [ServerRpc]
     private void CmdRequestSelectionChange(int direction, bool fobSelected)
     {

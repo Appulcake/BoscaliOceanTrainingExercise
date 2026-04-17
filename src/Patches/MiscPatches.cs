@@ -166,7 +166,7 @@ public static class HangarPatches
         
         Aircraft aircraft = NetworkSceneSingleton<Spawner>.i.SpawnAircraft(player, definition.unitPrefab, loadout, fuelLevel, livery, gp, __instance.spawnTransform.rotation, __instance.GetVelocity(), __instance, __instance.attachedUnit.NetworkHQ, null, 1f, 0.5f);
         
-        if (loadout == null) aircraft.Networkloadout = aircraft.weaponManager.SelectWeapons(preferNukes: true);
+        if (loadout == null) aircraft.Networkloadout = aircraft.weaponManager.SelectAIAircraftWeapons();
         __instance.spawnedObject = aircraft.gameObject;
         return false;
     }
@@ -207,13 +207,25 @@ public static class HangarPatches
 public static class TurretPatches
 {
     [HarmonyPatch(nameof(Turret.AimTurret), typeof(Vector3))]
-    [HarmonyPatch(nameof(Turret.AimTurret), typeof(WeaponStation))]
     [HarmonyPostfix]
-    private static void AimTurret_Postfix(Turret __instance)
+    private static void AimTurret_PostfixVector3(Turret __instance)
     {
         if (__instance.aimSafetyWeapon is not Gun gun) return;
-
+        
         if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out _, 200f, -8193))
+        {
+            __instance.aimSafetyWeapon.Safety = true;
+        }
+    }
+    
+    [HarmonyPatch(nameof(Turret.AimTurret), typeof(WeaponStation))]
+    [HarmonyPostfix]
+    private static void AimTurret_PostfixWeaponStation(Turret __instance)
+    {
+        if (__instance.aimSafetyWeapon is not Gun gun) return;
+        
+        var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
+        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
         {
             __instance.aimSafetyWeapon.Safety = true;
         }
@@ -491,6 +503,7 @@ public static class FactionHQPatches
 public static class PilotPatches
 {
     [HarmonyPatch(nameof(Pilot.ApplyDamage))]
+    [HarmonyPrefix]
     private static void ApplyDamage_Prefix(Pilot __instance, ref float impactDamage)
     {
         if (__instance.aircraft != null && ModAssets.i.shipDefinitions.Contains(__instance.aircraft.definition))

@@ -1,4 +1,5 @@
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 
@@ -7,9 +8,9 @@ namespace NOComponentWIP.Patches;
 [HarmonyPatch(typeof(Aircraft))]
 public class AircraftPatches
 {
-	[HarmonyPatch("SetSimplePhysics")]
+	[HarmonyPatch(nameof(Aircraft.SetSimplePhysics))]
 	[HarmonyPrefix]
-	static bool SetSimplePhysics(Aircraft __instance)
+	static bool SetSimplePhysics_Prefix(Aircraft __instance)
 	{
 		var bridge = __instance.GetComponent<ShipPartBridge>();
 		if (bridge == null) return true;
@@ -27,9 +28,9 @@ public class AircraftPatches
 		return false;
 	}
 	
-	[HarmonyPatch("SetComplexPhysics")]
+	[HarmonyPatch(nameof(Aircraft.SetComplexPhysics))]
 	[HarmonyPrefix]
-	static bool SetComplexPhysics(Aircraft __instance)
+	static bool SetComplexPhysics_Prefix(Aircraft __instance)
 	{
 		var bridge = __instance.GetComponent<ShipPartBridge>();
 		if (bridge == null) return true;
@@ -53,7 +54,7 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.CanRearm))]
 	[HarmonyPrefix]
-	static bool CanRearm(Aircraft __instance, bool aircraftRearm, bool vehicleRearm, bool shipRearm, ref bool __result)
+	static bool CanRearm_Prefix(Aircraft __instance, bool aircraftRearm, bool vehicleRearm, bool shipRearm, ref bool __result)
 	{
 		if (!__instance.GetComponent<ShipPartBridge>()) return true;
 
@@ -65,7 +66,7 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.Rearm))]
 	[HarmonyPrefix]
-	static bool Rearm(Aircraft __instance, RearmEventArgs args)
+	static bool Rearm_Prefix(Aircraft __instance, RearmEventArgs args)
 	{
 		if (!__instance.GetComponent<ShipPartBridge>()) return true;
 		var ac = __instance;
@@ -86,7 +87,7 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.ReturnToInventory))]
 	[HarmonyPrefix]
-	static void ReturnToInventory(Aircraft __instance, ref bool __state)
+	static void ReturnToInventory_Prefix(Aircraft __instance, ref bool __state)
 	{
 		__state = false;
 		if (!__instance.IsServer) return;
@@ -115,7 +116,7 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.FixedUpdate))]
 	[HarmonyPostfix]
-	static void FixedUpdate(Aircraft __instance)
+	static void FixedUpdate_Postfix(Aircraft __instance)
 	{
 		var ac = __instance;
 		if (ac.GetComponent<ShipPartBridge>() == null) return; 
@@ -124,5 +125,26 @@ public class AircraftPatches
 			var velocity = ac.cockpit.rb.velocity;
 			ac.speed = velocity.magnitude;
 		}
+	}
+	
+	[HarmonyPatch(nameof(Aircraft.EjectionSequence))]
+	[HarmonyPrefix]
+	private static void EjectionSequence_Prefix(Aircraft __instance)
+	{
+		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return;
+		var ship = __instance;
+		var ab = ship.GetComponent<Airbase>();
+		
+		if (ship.speed < 10f && ship.NetworkHQ != null && ship.NetworkHQ.AnyNearAirbaseInRange(ship.transform.position, out var airbase, 2000f, ab))
+		{
+			ship.ReturnToInventory();
+		}
+	}
+
+	private static async UniTask ShipEjection(Aircraft ship)
+	{
+		
+		
+		await UniTask.CompletedTask;
 	}
 }
