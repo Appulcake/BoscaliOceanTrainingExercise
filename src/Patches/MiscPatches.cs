@@ -396,7 +396,7 @@ public static class RadialMenuActionPatches
 [HarmonyPatch(typeof(Encyclopedia))]
 public static class EncyclopediaPatches
 {
-    private static bool triggered = false;
+    /*private static bool triggered = false;
     [HarmonyPatch(nameof(Encyclopedia.AfterLoad), new Type[0])]
     [HarmonyPostfix]
     private static void AfterLoad_Postfix()
@@ -421,7 +421,7 @@ public static class EncyclopediaPatches
         }
 
         triggered = true;
-    }
+    }*/
 }
 
 [HarmonyPatch(typeof(FactionHQ))]

@@ -44,6 +44,7 @@ public class ShipPartPatches
     [HarmonyPrefix]
     static bool DamageControl(ShipPart __instance)
     {
+        if (__instance == null)  return true;
         if (__instance.GetType() != typeof(AircraftShipPart))
         {
             return true;
@@ -59,7 +60,7 @@ public class ShipPartPatches
             float rate2 = 0.001f * __instance.originalDisplacement;
             __instance.displacement += rate2;
             __instance.displacement = Mathf.Min(__instance.displacement, __instance.originalDisplacement);
-            __instance.parentShip.damageControlAvailable -= 10f * rate + rate2;
+            bridge.damageControlAvailable -= 10f * rate + rate2;
         }
 
         return false;
