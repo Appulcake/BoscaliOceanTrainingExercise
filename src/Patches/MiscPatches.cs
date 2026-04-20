@@ -159,6 +159,7 @@ public static class HangarPatches
     private static bool SpawnAircraft_Prefix(Hangar __instance, Player player, AircraftDefinition definition, Loadout loadout, float fuelLevel, LiveryKey livery)
     {
         if (!ModAssets.i.shipDefinitions.Contains(definition)) return true;
+        if (__instance.attachedUnit is not Ship && __instance.attachedUnit.definition != ModAssets.i.dockDef) return true;
 
         GlobalPosition tempgp = __instance.spawnTransform.GlobalPosition();
         tempgp.y = Datum.SeaLevel.y;
@@ -509,6 +510,11 @@ public static class PilotPatches
         if (__instance.aircraft != null && ModAssets.i.shipDefinitions.Contains(__instance.aircraft.definition))
             impactDamage = 0f;
     }
+}
+
+[HarmonyPatch(typeof(Missile))]
+public static class MissilePatches
+{
 }
 
 public static class TransformExtensions

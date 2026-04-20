@@ -21,6 +21,7 @@ public class ShipPartBridge : MonoBehaviour
 	public DeploymentManager deploymentManager;
 	public FOBManager fobManager;
 	public ResupplyController resupplyController;
+	public ShipControlUI shipControlUI;
 	
 	public void Awake()
 	{
@@ -115,6 +116,8 @@ public class ShipPartBridge : MonoBehaviour
 		{
 			JobManager.Add(part.SetupJob());
 		}
+
+		shipControlUI?.Initialize(aircraft, this);
 		
 	}
 	

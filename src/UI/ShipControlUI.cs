@@ -19,8 +19,16 @@ public class ShipControlUI : MonoBehaviour
 	public Color inactiveColor = Color.gray;
 	public List<ShipApp> apps;
 
+	[SerializeField] private Canvas canvas;
+	[SerializeField] private GraphicRaycaster raycaster;
+
 	private int tabIndex = -1;
 
+	private void Awake()
+	{
+		raycaster.enabled = false;
+	}
+	
 	private void Start()
 	{
 		for (int i = 0; i < uiTabs.Count; i++)
@@ -28,6 +36,7 @@ public class ShipControlUI : MonoBehaviour
 			int index = i;
 			uiTabs[i].button.onClick.AddListener(() => SwitchToTab(index));
 		}
+		canvas.worldCamera = CameraStateManager.i.mainCamera;
 	}
 
 	public void Initialize(Aircraft aircraft, ShipPartBridge bridge)
@@ -36,6 +45,14 @@ public class ShipControlUI : MonoBehaviour
 		{
 			app.Initialize(aircraft, bridge);
 		}
+		raycaster.enabled = true;
+		aircraft.onDisableUnit += ShipControlUI_OnDisable;
+	}
+
+	private void ShipControlUI_OnDisable(Unit unit)
+	{
+		raycaster.enabled = false;
+		Destroy(this.gameObject);
 	}
 
 	private void SwitchToTab(int index)
@@ -45,7 +62,7 @@ public class ShipControlUI : MonoBehaviour
 		for (int i = 0; i < uiTabs.Count; i++)
 		{
 			bool isActive = (i == index);
-			uiTabs[i].panelObject.SetActive(isActive);
+			uiTabs[i].panelObject?.SetActive(isActive);
 			
 			var colors = uiTabs[i].button.colors;
 			uiTabs[i].button.image.color = isActive ? activeColor : inactiveColor;

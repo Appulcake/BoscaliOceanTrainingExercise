@@ -36,6 +36,8 @@ public class ModAssets : ScriptableObject
 	[SerializeField] public AircraftDefinition[] shipDefinitions;
 	[SerializeField] public AircraftDefinition[] shipDefinitionsWithDeployer;
 
+	[SerializeField] public BuildingDefinition dockDef;
+
 	
 
 	private void OnEnable()

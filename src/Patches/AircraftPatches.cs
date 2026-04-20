@@ -64,7 +64,7 @@ public class AircraftPatches
 		return false;
 	}
 
-	[HarmonyPatch(nameof(Aircraft.Rearm))]
+	/*[HarmonyPatch(nameof(Aircraft.Rearm))]
 	[HarmonyPrefix]
 	static bool Rearm_Prefix(Aircraft __instance, RearmEventArgs args)
 	{
@@ -83,7 +83,7 @@ public class AircraftPatches
 		}
 		
 		return false;
-	}
+	}*/
 
 	[HarmonyPatch(nameof(Aircraft.ReturnToInventory))]
 	[HarmonyPrefix]

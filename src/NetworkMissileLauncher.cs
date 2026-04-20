@@ -30,12 +30,13 @@ public class NetworkMissileLauncher : Weapon
 
     private readonly SemaphoreSlim firingSemaphore = new SemaphoreSlim(1, 1);
     private float lastLaunchFinishTime;
-    
-    private int MagazineCapacity => launchTransforms != null ? launchTransforms.Length : 0;
+
+    private int magazineCapacity;
     private int ReserveMagazineCount => Mathf.Max(0, magazineCount);
 
     private void OnEnable()
     {
+        magazineCapacity = ammo;
         ResetAmmoState();
     }
 
@@ -46,7 +47,7 @@ public class NetworkMissileLauncher : Weapon
 
     private void ResetAmmoState()
     {
-        int capacity = MagazineCapacity;
+        int capacity = magazineCapacity;
 
         loadedMissiles = capacity;
         reserveMissiles = ReserveMagazineCount * capacity;
@@ -75,12 +76,12 @@ public class NetworkMissileLauncher : Weapon
             || weaponStation == null
             || Safety
             || reloading
-            || MagazineCapacity == 0
+            || magazineCapacity == 0
             || loadedMissiles <= 0
             || ammo <= 0
             || Time.timeSinceLevelLoad - lastFired < fireInterval
             || currentTube < 0
-            || currentTube >= MagazineCapacity)
+            || currentTube >= magazineCapacity)
         {
             return;
         }
@@ -133,11 +134,11 @@ public class NetworkMissileLauncher : Weapon
                 || weaponStation == null
                 || Safety
                 || reloading
-                || MagazineCapacity == 0
+                || magazineCapacity == 0
                 || loadedMissiles <= 0
                 || ammo <= 0
                 || currentTube < 0
-                || currentTube >= MagazineCapacity)
+                || currentTube >= magazineCapacity)
             {
                 return;
             }
@@ -232,7 +233,7 @@ public class NetworkMissileLauncher : Weapon
 
     private async UniTaskVoid BeginReload()
     {
-        if (reloading || reserveMissiles <= 0 || MagazineCapacity <= 0)
+        if (reloading || reserveMissiles <= 0 || magazineCapacity <= 0)
         {
             return;
         }
@@ -259,7 +260,7 @@ public class NetworkMissileLauncher : Weapon
             return;
         }
 
-        int amountToLoad = Mathf.Min(MagazineCapacity, reserveMissiles);
+        int amountToLoad = Mathf.Min(magazineCapacity, reserveMissiles);
         loadedMissiles = amountToLoad;
         reserveMissiles -= amountToLoad;
         currentTube = 0;
@@ -323,6 +324,6 @@ public class NetworkMissileLauncher : Weapon
 
     public override bool HasMagazines()
     {
-        return MagazineCapacity > 0;
+        return magazineCapacity > 0;
     }
 }
