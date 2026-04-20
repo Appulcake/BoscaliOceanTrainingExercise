@@ -110,4 +110,9 @@
   <ItemGroup>
     <None Remove="bote_1.3.5.nobp" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="bote_1.3.6.nobp" />
+    <EmbeddedResource Include="bote_1.3.6.nobp" />
+  </ItemGroup>
 </Project>
