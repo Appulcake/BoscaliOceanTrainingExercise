@@ -212,6 +212,7 @@ public static class TurretPatches
     private static void AimTurret_PostfixVector3(Turret __instance)
     {
         if (__instance.aimSafetyWeapon is not Gun gun) return;
+        if (!ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
         if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out _, 200f, -8193))
         {
@@ -224,6 +225,7 @@ public static class TurretPatches
     private static void AimTurret_PostfixWeaponStation(Turret __instance)
     {
         if (__instance.aimSafetyWeapon is not Gun gun) return;
+        if (!ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
         var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
         if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
@@ -515,6 +517,25 @@ public static class PilotPatches
 [HarmonyPatch(typeof(Missile))]
 public static class MissilePatches
 {
+}
+
+[HarmonyPatch(typeof(Radar))]
+public static class RadarPatches
+{
+    [HarmonyPatch(nameof(Radar.OnDestroy))]
+    [HarmonyPrefix]
+    private static void OnDestroy_Prefix(Radar __instance)
+    {
+        foreach (var hq in FactionRegistry.HQLookup.Values)
+        {
+            if (hq == null) continue;
+            if (hq.radars.Contains(__instance))
+            {
+                hq.radars.Remove(__instance);
+            }
+        }
+        
+    }
 }
 
 public static class TransformExtensions
