@@ -141,10 +141,29 @@ public class AircraftPatches
 		}
 	}
 
-	private static async UniTask ShipEjection(Aircraft ship)
+	[HarmonyPatch(nameof(Aircraft.CheckRadarAlt))]
+	[HarmonyPrefix]
+	private static bool CheckRadarAlt_Prefix(Aircraft __instance)
 	{
+		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return true;
+
+		if (Physics.Linecast(__instance.transform.position, __instance.transform.position - Vector3.up * 10000f, out __instance.hit, 2112))
+		{
+			__instance.radarAlt = __instance.hit.distance;
+		}
+		else
+		{
+			__instance.radarAlt = __instance.transform.position.GlobalY();
+		}
+		__instance.radarAlt -= __instance.definition.spawnOffset.y;
+		__instance.radarAlt = Mathf.Clamp(__instance.radarAlt, 0f, __instance.transform.position.GlobalY() - __instance.definition.spawnOffset.y);
 		
+		//Not really the correct place to do this but it works and i don't care its easier
+		if (__instance.speed > 6) //~20 km/h 
+		{
+			MusicManager.i.CrossFadeMusic(__instance.GetAircraftParameters().takeoffMusic, 2f, 0f, repeat: false, allowReplay: true, replacePlaying: true); //replay because botes are cool (it uses the same clips and will break stuff otherwise)
+		}
 		
-		await UniTask.CompletedTask;
+		return false;
 	}
 }

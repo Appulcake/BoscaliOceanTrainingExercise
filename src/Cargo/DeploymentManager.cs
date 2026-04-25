@@ -50,15 +50,9 @@ public class DeploymentManager : NetworkBehaviour
     {
         if (!aircraft.LocalSim) return;
         if (aircraft.Player == null) return;
-        Debug.Log($"[BOAT] Local Player Started. Initializing Manifest...");
+        if (!GameManager.IsLocalAircraft(aircraft)) return;
         
-        List<int> presetIds = new List<int>();
-        foreach (var unit in presetUnits)
-        {
-            int id = availableUnits.IndexOf(unit);
-            if (id != -1) presetIds.Add(id);
-        }
-        
+        /*Debug.Log($"[BOAT] Local Player Started. Initializing Manifest...");*/
 
         if (LoadoutBridge.LoadoutSet)
         {
