@@ -80,8 +80,7 @@ public class NetworkMissileLauncher : Weapon
             || loadedMissiles <= 0
             || ammo <= 0
             || Time.timeSinceLevelLoad - lastFired < fireInterval
-            || currentTube < 0
-            || currentTube >= magazineCapacity)
+            || currentTube < 0)
         {
             return;
         }
@@ -111,10 +110,12 @@ public class NetworkMissileLauncher : Weapon
         
         try
         {
-            if (bayDoors != null && bayDoors.Length > 0)
+            if ((bayDoors != null && bayDoors.Length > 0) || hardpoint?.bayDoors?.Length > 0)
             {
                 foreach (BayDoor bayDoor in bayDoors)
                     bayDoor?.OpenDoor(doorOpenDuration);
+                
+                hardpoint?.SpringOpenBayDoors();
 
                 await UniTask.WaitUntil(
                     AreBayDoorsFullyOpen,
@@ -137,8 +138,7 @@ public class NetworkMissileLauncher : Weapon
                 || magazineCapacity == 0
                 || loadedMissiles <= 0
                 || ammo <= 0
-                || currentTube < 0
-                || currentTube >= magazineCapacity)
+                || currentTube < 0)
             {
                 return;
             }
@@ -186,6 +186,10 @@ public class NetworkMissileLauncher : Weapon
             loadedMissiles--;
             ammo--;
             currentTube++;
+            if (currentTube >= launchTransforms.Length)
+            {
+                currentTube = 0;
+            }
             weaponStation.UpdateLastFired(0);
             weaponStation.AccountAmmo();
             weaponStation.Updated();
@@ -221,6 +225,14 @@ public class NetworkMissileLauncher : Weapon
         }
 
         foreach (BayDoor bayDoor in bayDoors)
+        {
+            if (bayDoor != null && bayDoor.openAmount < 0.95f)
+            {
+                return false;
+            }
+        }
+        
+        foreach (BayDoor bayDoor in hardpoint.bayDoors)
         {
             if (bayDoor != null && bayDoor.openAmount < 0.95f)
             {

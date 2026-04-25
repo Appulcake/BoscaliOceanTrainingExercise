@@ -16,6 +16,9 @@ public class ShipPartBridge : MonoBehaviour
 	[SerializeField] private bool handleGear;
 
 	[SerializeField] private Ship.WakeParticles[] wakeParticles;
+	[SerializeField] private AudioSource[] waterSounds;
+	[SerializeField] private AudioSource[] hullSounds;
+	
 	private float gearTimer = 0f;
 	
 	public DeploymentManager deploymentManager;
@@ -28,6 +31,28 @@ public class ShipPartBridge : MonoBehaviour
 		aircraft.onDisableUnit += UnitDisabled;
 		aircraft.onInitialize +=  OnInitialize;
 		if (handleGear) aircraft.onSetGear += HandleGearEvent;
+	}
+
+	private void Update()
+	{
+		if (GameManager.ShowEffects)
+		{
+			Animate();
+		}
+	}
+
+	private void Animate()
+	{
+		foreach (var source in waterSounds)
+		{
+			float sqrMagnitude = aircraft.rb.GetPointVelocity(source.transform.position).sqrMagnitude;
+			source.volume = Mathf.Clamp01(sqrMagnitude * 0.005f);
+		}
+
+		foreach (var source in hullSounds)
+		{
+			source.volume = 0.25f + Mathf.Clamp01(aircraft.speed * 0.05f);
+		}
 	}
 	
 	private void UnitDisabled(Unit unit)
