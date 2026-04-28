@@ -534,7 +534,124 @@ public static class RadarPatches
                 hq.radars.Remove(__instance);
             }
         }
+    }
+}
+
+[HarmonyPatch(typeof(AIHeloTakeoffState))]
+public static class AIHeloTakeoffStatePatches
+{
+    /*[HarmonyPatch(nameof(AIHeloTakeoffState.FixedUpdateState))]
+    [HarmonyPostfix]
+    private static void FixedUpdateState_Postfix(AIHeloTakeoffState __instance)
+    {
+        if (__instance.aircraft.radarAlt > 1f)
+        {
+            var ac = __instance.aircraft;
+            ac?.GetControlsFilter().SetAutoHover(enabled: true);
+            ac?.SetFlightAssist(enabled: false);
+            var vel = ac?.hit.collider?.attachedRigidbody?.velocity ?? Vector3.zero;
+            ac?.autopilot?.Hover(ac.GlobalPosition() + vel, 50f, ac.transform.forward);
+        }
+    }*/
+}
+
+[HarmonyPatch(typeof(ControlsFilter.AutoHover))]
+public static class ControlsFilterAutoHoverPatches
+{
+    private static Aircraft tempAircraft;
+    
+    [HarmonyPatch(nameof(ControlsFilter.AutoHover.Hover))]
+    [HarmonyPrefix]
+    private static void Hover_Prefix(ControlsFilter.AutoHover __instance, ControlInputs inputs, Aircraft aircraft)
+    {
+        tempAircraft = aircraft;
+    }
+    
+    [HarmonyPatch(nameof(ControlsFilter.AutoHover.Hover))]
+    [HarmonyPostfix]
+    private static void Hover_Postfix(ControlsFilter.AutoHover __instance, ControlInputs inputs, Aircraft aircraft)
+    {
+        tempAircraft = null;
+    }
+    
+    
+    [HarmonyPatch(nameof(ControlsFilter.AutoHover.CheckNearbyShip))]
+    [HarmonyPrefix]
+    private static bool CheckNearbyShip_Prefix(ControlsFilter.AutoHover __instance, FactionHQ faction,
+        GlobalPosition position)
+    {
+        if (!(Time.timeSinceLevelLoad - __instance.lastShipCheck < 3f))
+        {
+            __instance.lastShipCheck = Time.timeSinceLevelLoad;
+            if (faction != null && faction.TryGetNearestShip(position, out var nearestShip, out var nearestDistance) && nearestDistance < 250000f)
+            {
+                __instance.surfaceVelocity = nearestShip.rb.velocity;
+            }
+            else if (faction != null && faction.TryGetNearestAircraft(position, out var nearestAircraft, out nearestDistance, tempAircraft) && nearestDistance < 250000f && ModAssets.i.shipDefinitionsWithDeployer.Contains(nearestAircraft.definition))
+            {
+                __instance.surfaceVelocity = nearestAircraft.rb.velocity;
+            } else
+            {
+                __instance.surfaceVelocity = Vector3.zero;
+            }
+        }
+
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(StatusGauges))]
+public static class StatusGaugesPatches
+{
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(StatusGauges.Refresh))]
+    private static bool Refresh_Prefix(StatusGauges __instance)
+    {
+        if (__instance.irSource != null) return true;
+        if (__instance.aircraft == null) return true;
+
+        __instance.throttleLevelDisplay.rectTransform.sizeDelta = new Vector2(__instance.gaugeThickness, 200f * __instance.inputs.throttle);
+        if (Time.timeSinceLevelLoad > __instance.lastRefresh + __instance.refreshDelay)
+        {
+            float fuelLevel = __instance.aircraft.GetFuelLevel();
+            __instance.fuelLevelDisplay.rectTransform.sizeDelta = new Vector2(__instance.gaugeThickness, 200f * fuelLevel);
+            __instance.fuelLevelDisplay.color = GameAssets.i.redGreenGradient.Evaluate(fuelLevel);
+            float mass = __instance.aircraft.GetMass();
+            __instance.massValue.text = UnitConverter.WeightReading(mass);
+            float maxThrust;
+            if (__instance.aircraft.GetMaxPower(out var maxPower))
+            {
+                __instance.twrValue.text = UnitConverter.PowerToWeightReading(maxPower * 0.001f / mass);
+            }
+            else if (__instance.aircraft.GetMaxThrust(out maxThrust))
+            {
+                __instance.twrValue.text = $"{maxThrust / (mass * 9.81f):F2}";
+            }
+            __instance.lastRefresh = Time.timeSinceLevelLoad;
+        }
         
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(TargetCam))]
+public static class TargetCamPatches
+{
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(TargetCam.Update))]
+    private static bool Update_Prefix(TargetCam __instance)
+    {
+        if (__instance.aircraft == null || __instance.aircraft.Player == null || !__instance.aircraft.Player.IsLocalPlayer) return false;
+
+        return true;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(TargetCam.Initialize))]
+    private static bool Initialize_Prefix(TargetCam __instance)
+    {
+        if (__instance.aircraft.Player == null) return false;
+        return true;
     }
 }
 

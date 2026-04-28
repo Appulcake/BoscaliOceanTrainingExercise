@@ -50,4 +50,24 @@ public static class HQExtensions
 
 		return false;
 	}
+
+	public static bool TryGetNearestAircraft(this FactionHQ hq, GlobalPosition fromPosition, out Aircraft nearestAircraft, out float nearestDistance, Aircraft excludeAircraft = null)
+	{
+		nearestAircraft = null;
+		nearestDistance = float.MaxValue;
+		foreach (PersistentID factionUnit in hq.factionUnits)
+		{
+			if (UnitRegistry.TryGetUnit(factionUnit, out var unit) && unit is Aircraft aircraft)
+			{
+				if (aircraft == excludeAircraft) continue;
+				float num = FastMath.SquareDistance(aircraft.GlobalPosition(), fromPosition);
+				if (num < nearestDistance)
+				{
+					nearestAircraft = aircraft;
+					nearestDistance = num;
+				}
+			}
+		}
+		return nearestAircraft != null;
+	}
 }

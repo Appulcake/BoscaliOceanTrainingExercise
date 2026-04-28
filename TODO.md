@@ -1,36 +1,32 @@
 ## Bug Fixes:
 
-- ~~Fob Creator breaks on death~~
-- ~~Naval CIWS stinky~~
-- ~~Bote stability hopefully~~
-- ~~missile launcher funky~~ fixed?
-- ~~patch for auto turret~~
-- ~~vls agm48 is cursed~~ not fixed, but disabled
-- ~~otb/ship pilot strong~~
-- ~~radial menu landing gear handling~~
 - sink when spawning in ship if host or singleplayer
-- ~~airbase still dont work on ocean with fob~~
-- ~~airbase center does not have correct pos in mp~~
 - resupply ai broke :(
 
 ## improvements
 
-- take a look at new patches to see what might break
 - guns are funky in mp perhaps, might not be a bote issue
-- ~~check turret raycast logic~~
-- rename bote missiles
 - phased array lasers
 
 ## additions
 
-
 - escort spawning
-- increase missile firerate?
 - unit costs
 - top speed throttle "afterburner"
-- swap to/from AI?
-- ~~disembarking~~
+- swap to/from AI? (in progress)
 - fob for aircraft?
-- disembark notice
 - damage control UI
 - strike planning UI
+
+## todo list for me yipee
+
+- fix lfd SAM launch transform
+- add lfd SSM
+- lfd weapons overhaul in general
+- lfd balance
+- ram-45 need to add soft launch back
+- finish swap system
+- ui
+- ui
+- ui
+- ui

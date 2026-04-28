@@ -38,6 +38,8 @@ public class ModAssets : ScriptableObject
 
 	[SerializeField] public BuildingDefinition dockDef;
 
+	[SerializeField] public GameObject networkModSingletons;
+	[SerializeField] public GameObject modSingletons;
 	
 
 	private void OnEnable()

@@ -25,6 +25,7 @@ public class ShipPartBridge : MonoBehaviour
 	public FOBManager fobManager;
 	public ResupplyController resupplyController;
 	public ShipControlUI shipControlUI;
+	private bool musicStarted = false;
 	
 	public void Awake()
 	{
@@ -144,6 +145,16 @@ public class ShipPartBridge : MonoBehaviour
 
 		shipControlUI?.Initialize(aircraft, this);
 		
+		this.StartSlowUpdateDelayed(1f, MusicCheck);
+	}
+
+	private void MusicCheck()
+	{
+		if (aircraft.speed > 6 && !musicStarted) //~20 km/h 
+		{
+			musicStarted = true;
+			MusicManager.i.CrossFadeMusic(aircraft.GetAircraftParameters().takeoffMusic, 2f, 0f, repeat: false, allowReplay: true, replacePlaying: true); //replay because botes are cool (it uses the same clips and will break stuff otherwise)
+		}
 	}
 	
 	public void SetComplexPhysics()

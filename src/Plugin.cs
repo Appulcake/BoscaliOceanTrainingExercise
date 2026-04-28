@@ -15,12 +15,25 @@ namespace NOComponentWIP;
 public class Plugin : BaseUnityPlugin
 {
 	internal static new ManualLogSource Logger;
-	void Awake()
+	private void Awake()
 	{
 		Logger = base.Logger;
 		Harmony harmony = new Harmony("NOComponentWIP");
 		harmony.PatchAll();
 		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");
+	}
+
+	private void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			if (AircraftSwitcher.i == null) return;
+			if (!GameManager.GetLocalPlayer(out NuclearOption.Networking.Player player)) return;
+			if (!GameManager.GetLocalAircraft(out var aircraft)) return;
+			var targetUnit = aircraft.weaponManager.targetList[0];
+			if (targetUnit == null || targetUnit is not Aircraft newAircraft) return;
+			AircraftSwitcher.i.SwitchAircraft(player, aircraft, newAircraft);
+		}
 	}
 }
 
@@ -28,15 +41,17 @@ public class Plugin : BaseUnityPlugin
 public static class Mod_Input
 {
 	private static List<int> catIDs = new List<int>();
+	private static int newMapID = -1;
 	
 	private static List<string> customActions =
 	[
+		"Menu",
 		"Deploy Unit",
 		"Next Unit",
 		"Previous Unit",
 		"Call Resupply",
 		"Select/Deselect FOB",
-		"Open Control UI"
+		"Control UI - Select"
 	];
 	
 	[HarmonyPatch(typeof(InputManager_Base), nameof(InputManager_Base.Awake))]
@@ -52,6 +67,8 @@ public static class Mod_Input
 		if (actions == null) return;
 		var categories = manager?.userData?.actionCategories;
 		if (categories == null) return;
+		var mapCategories = manager?.userData?.mapCategories;
+		if (mapCategories  == null) return;
 		var newCat = new InputCategory
 		{
 			descriptiveName = "Boscali Ocean Training Exercise",
@@ -77,22 +94,39 @@ public static class Mod_Input
 			manager.userData.actionCategoryMap.AddAction(newCat.id, newAction.id);
 		}
 		catIDs.Add(newCat.id);
+
+		var newMapCat = new InputMapCategory();
+		newMapCat._name = "BOTE";
+		newMapCat.id = GetNewMapCatID(mapCategories);
+		newMapCat.descriptiveName = "BOTE";
+		newMapCat.userAssignable = true;
+		newMapCat.checkConflictsWithAllCategories = true;
+		mapCategories.Add(newMapCat);
+		newMapID = newMapCat.id;
+
 	}
 
-	[HarmonyPatch(typeof(ControlMapper), nameof(ControlMapper.Awake))]
+	[HarmonyPatch(typeof(ControlMapper), nameof(ControlMapper.Initialize))]
 	private static void Prefix(ControlMapper __instance)
 	{
-		foreach (var cat in catIDs)
-		{
-			var actionCategoryIds = __instance._mappingSets[0]?._actionCategoryIds;
-			if (actionCategoryIds == null) return;
-			if (actionCategoryIds.Contains(cat)) continue;
-			__instance._mappingSets[0]._actionCategoryIds = actionCategoryIds.AddToArray(cat);
-		}
+		var newMappingSet = new ControlMapper.MappingSet(newMapID, ControlMapper.MappingSet.ActionListMode.ActionCategory, catIDs.ToArray(), []);
+		__instance._mappingSets = __instance._mappingSets.AddToArray(newMappingSet);
 		
 	}
 
+	private static int GetNewSetID(List<ControlMapper.MappingSet> categories)
+	{
+		if (categories == null || !categories.Any()) return 1;
+		return categories.Max(c => c.mapCategoryId) + 1;
+	}
+	
 	private static int GetNewCategoryID(List<InputCategory> categories)
+	{
+		if (categories == null || !categories.Any()) return 1;
+		return categories.Max(c => c.id) + 1;
+	}
+
+	private static int GetNewMapCatID(List<InputMapCategory> categories)
 	{
 		if (categories == null || !categories.Any()) return 1;
 		return categories.Max(c => c.id) + 1;

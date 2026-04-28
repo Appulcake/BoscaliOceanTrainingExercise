@@ -158,12 +158,20 @@ public class AircraftPatches
 		__instance.radarAlt -= __instance.definition.spawnOffset.y;
 		__instance.radarAlt = Mathf.Clamp(__instance.radarAlt, 0f, __instance.transform.position.GlobalY() - __instance.definition.spawnOffset.y);
 		
-		//Not really the correct place to do this but it works and i don't care its easier
-		if (__instance.speed > 6) //~20 km/h 
-		{
-			MusicManager.i.CrossFadeMusic(__instance.GetAircraftParameters().takeoffMusic, 2f, 0f, repeat: false, allowReplay: true, replacePlaying: true); //replay because botes are cool (it uses the same clips and will break stuff otherwise)
-		}
-		
 		return false;
+	}
+
+	[HarmonyPatch(nameof(Aircraft.OnStartClient))]
+	[HarmonyPostfix]
+	private static void OnStartClient_Postfix(Aircraft __instance)
+	{
+		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return;
+
+		if (__instance.LocalSim)
+		{
+			__instance.controlInputs.throttle = 0f;
+			__instance.SetGear(false);
+			__instance.GearStateChanged(false);
+		}
 	}
 }

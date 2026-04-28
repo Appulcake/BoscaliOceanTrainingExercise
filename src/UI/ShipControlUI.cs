@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace NOComponentWIP;
@@ -23,10 +24,12 @@ public class ShipControlUI : MonoBehaviour
 	[SerializeField] private GraphicRaycaster raycaster;
 
 	private int tabIndex = -1;
+	private Aircraft aircraft;
 
 	private void Awake()
 	{
 		raycaster.enabled = false;
+		enabled = false;
 	}
 	
 	private void Start()
@@ -41,17 +44,21 @@ public class ShipControlUI : MonoBehaviour
 
 	public void Initialize(Aircraft aircraft, ShipPartBridge bridge)
 	{
+		this.aircraft = aircraft;
 		foreach (var app in apps)
 		{
 			app.Initialize(aircraft, bridge);
 		}
 		raycaster.enabled = true;
+		CombatHUD.i?.targetDesignator?.raycastTarget = false;
 		aircraft.onDisableUnit += ShipControlUI_OnDisable;
+		enabled = true;
 	}
 
 	private void ShipControlUI_OnDisable(Unit unit)
 	{
 		raycaster.enabled = false;
+		CombatHUD.i?.targetDesignator?.raycastTarget = true;
 		Destroy(this.gameObject);
 	}
 
@@ -76,6 +83,28 @@ public class ShipControlUI : MonoBehaviour
 		foreach (var app in apps)
 		{
 			app.Refresh();
+		}
+		var pd = new PointerEventData(GameManager.eventSystem)
+		{
+			position = new Vector2(Screen.width / 2, Screen.height / 2)
+		};
+
+		var results = new List<RaycastResult>();
+		raycaster.Raycast(pd, results);
+
+		var hit = results.Count < 0 ? results[0].gameObject : null;
+		var player = aircraft.pilots[0]?.playerState?.player;
+		
+		if (hit != null &&  player != null)
+		{
+			if (player.GetButtonDown("Control UI - Select")) {
+				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerDownHandler);
+			}
+            
+			if (player.GetButtonUp("Control UI - Select")) {
+				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerUpHandler);
+				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerClickHandler);
+			}
 		}
 	}
 }
