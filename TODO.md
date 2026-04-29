@@ -20,12 +20,16 @@
 
 ## todo list for me yipee
 
-- fix lfd SAM launch transform
-- add lfd SSM
 - lfd weapons overhaul in general
 - lfd balance
 - ram-45 need to add soft launch back
 - finish swap system
+- annex ssm animate
+- argus sam turrets?
+- argus SSM agm48
+- annex resupply filter
+- helicopter speed matching
+- annex ciws mounts
 - ui
 - ui
 - ui

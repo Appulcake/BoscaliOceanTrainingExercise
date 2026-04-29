@@ -111,7 +111,8 @@ public static class Mod_Input
 	{
 		var newMappingSet = new ControlMapper.MappingSet(newMapID, ControlMapper.MappingSet.ActionListMode.ActionCategory, catIDs.ToArray(), []);
 		__instance._mappingSets = __instance._mappingSets.AddToArray(newMappingSet);
-		
+		GameManager.playerInput.controllers.maps.SetMapsEnabled(true, "BOTE");
+
 	}
 
 	private static int GetNewSetID(List<ControlMapper.MappingSet> categories)

@@ -56,71 +56,79 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 	[ClientRpc]
 	private void CmdSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
-		oldAircraft.SetLocalSim(oldAircraft.CheckIfLocalSim());
-		newAircraft.SetLocalSim(newAircraft.CheckIfLocalSim());
+		oldAircraft?.SetLocalSim(oldAircraft.CheckIfLocalSim());
+		newAircraft?.SetLocalSim(newAircraft.CheckIfLocalSim());
 		
 		if (GameManager.IsLocalPlayer(player))
 		{
-			if (oldAircraft.statusDisplay != null)
+			if (oldAircraft != null)
 			{
-				oldAircraft.onDisableUnit -= oldAircraft.statusDisplay.StatusDisplay_OnDisable;
-				Destroy(oldAircraft.statusDisplay.gameObject);
-			}
-			oldAircraft.weaponManager.currentWeaponStation.SetStationActive(oldAircraft, false);
-			newAircraft.weaponManager.currentWeaponStation.SetStationActive(newAircraft, true);
-			CombatHUD.i.weaponStatus.UpdateDisplay(newAircraft.weaponManager.currentWeaponStation);
-
-			foreach (Transform cam in oldAircraft.targetCam?.currentMount.transform)
-			{
-				Destroy(cam.gameObject);
-			}
-			Destroy(oldAircraft.targetCam?.targetScreenUI);
-			Destroy(oldAircraft.targetCam?.landingScreenUI);
-			
-			CombatHUD.i.RemoveAircraft();
-			CombatHUD.i.threatList.ThreatList_OnAircraftDisable(oldAircraft);
-
-			foreach (var missile in newAircraft.GetMissileWarningSystem().knownMissiles)
-			{
-				CombatHUD.i.threatList.ThreatList_OnMissileWarning(new MissileWarning.OnMissileWarning
+				if (oldAircraft.statusDisplay != null)
 				{
-					missile = missile
-				});
+					oldAircraft.onDisableUnit -= oldAircraft.statusDisplay.StatusDisplay_OnDisable;
+					Destroy(oldAircraft.statusDisplay.gameObject);
+				}
+				oldAircraft.weaponManager.currentWeaponStation.SetStationActive(oldAircraft, false);
+				
+				foreach (Transform cam in oldAircraft.targetCam?.currentMount.transform)
+				{
+					Destroy(cam.gameObject);
+				}
+				Destroy(oldAircraft.targetCam?.targetScreenUI);
+				Destroy(oldAircraft.targetCam?.landingScreenUI);
+				oldAircraft.onDisableUnit -= CombatHUD.i.threatList.ThreatList_OnAircraftDisable;
+				CombatHUD.i.threatList.ThreatList_OnAircraftDisable(oldAircraft);
+
+				if (HUDAppManager.i != null && MFDAppManager.i != null)
+				{
+					oldAircraft.onDisableUnit -= HUDAppManager.i.HUDAppManager_OnUnitDisable;
+					oldAircraft.onDisableUnit -= MFDAppManager.i.HUDAppManager_OnUnitDisable;
+					PlayerSettings.OnApplyOptions -= HUDAppManager.i.RefreshSettings;
+					PlayerSettings.OnApplyOptions -= MFDAppManager.i.RefreshSettings;
+					Destroy(HUDAppManager.i.gameObject);
+					Destroy(MFDAppManager.i.gameObject);
+				}
+				
+				var oldCockpit = newAircraft.cockpit?.GetComponentInChildren<Cockpit>();
+				if (oldCockpit != null)
+				{
+					oldCockpit.enabled = false;
+					oldAircraft.onDisableUnit -=
+						oldCockpit.Cockpit_OnAircraftDisable;
+					Destroy(oldCockpit.tacScreen);
+				}
 			}
-			oldAircraft.onDisableUnit -= CombatHUD.i.threatList.ThreatList_OnAircraftDisable;
-			
-			if (HUDAppManager.i != null && MFDAppManager.i != null)
-			{
-				oldAircraft.onDisableUnit -= HUDAppManager.i.HUDAppManager_OnUnitDisable;
-				oldAircraft.onDisableUnit -= MFDAppManager.i.HUDAppManager_OnUnitDisable;
-				PlayerSettings.OnApplyOptions -= HUDAppManager.i.RefreshSettings;
-				PlayerSettings.OnApplyOptions -= MFDAppManager.i.RefreshSettings;
-				Destroy(HUDAppManager.i.gameObject);
-				Destroy(MFDAppManager.i.gameObject);
-			}
-			
+
+			CombatHUD.i.RemoveAircraft();
 			CombatHUD.i.SetAircraft(newAircraft);
 			DynamicMap.i.DeselectAllIcons();
-			newAircraft.pilots[0].SwitchState(newAircraft.pilots[0].playerState);
-			newAircraft.SetupLocalPlayerAndUI();
-			var newCockpit = newAircraft.cockpit?.GetComponentInChildren<Cockpit>();
-			var oldCockpit = newAircraft.cockpit?.GetComponentInChildren<Cockpit>();
-
-			if (oldCockpit != null)
-			{
-				oldCockpit.enabled = false;
-				oldAircraft.onDisableUnit -=
-					oldCockpit.Cockpit_OnAircraftDisable;
-				Destroy(oldCockpit.tacScreen);
-			}
 			
-			if (newCockpit != null)
+			if (newAircraft != null)
 			{
-				newCockpit.Cockpit_OnAircraftInitialize();
-			}
+				newAircraft.weaponManager.currentWeaponStation.SetStationActive(newAircraft, true);
+				CombatHUD.i.weaponStatus.UpdateDisplay(newAircraft.weaponManager.currentWeaponStation);
+				
+				foreach (var missile in newAircraft.GetMissileWarningSystem().knownMissiles)
+				{
+					CombatHUD.i.threatList.ThreatList_OnMissileWarning(new MissileWarning.OnMissileWarning
+					{
+						missile = missile
+					});
+				}
+				
+				newAircraft.pilots[0].SwitchState(newAircraft.pilots[0].playerState);
+				newAircraft.SetupLocalPlayerAndUI();
+				
+				var newCockpit = newAircraft.cockpit?.GetComponentInChildren<Cockpit>();
+				
+				if (newCockpit != null)
+				{
+					newCockpit.Cockpit_OnAircraftInitialize();
+				}
 			
-			newAircraft.targetCam?.Initialize();
-			newAircraft.weaponManager.ClearTargetList();
+				newAircraft.targetCam?.Initialize();
+				newAircraft.weaponManager.ClearTargetList();
+			}
 		}
 	}
 }
