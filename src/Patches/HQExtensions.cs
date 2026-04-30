@@ -6,7 +6,7 @@ namespace NOComponentWIP.Patches;
 
 public static class HQExtensions
 {
-	public static bool GetNearestAircraftCapableAirbase(this FactionHQ hq, Vector3 position, AircraftDefinition[] definitions, out Airbase validAirbase)
+	public static bool GetNearestAircraftCapableAirbase(this FactionHQ hq, Vector3 position, AircraftDefinition[] definitions, out Airbase validAirbase, Airbase exclude = null)
 	{
 		validAirbase = null;
 		if (hq == null) return false;
@@ -18,6 +18,7 @@ public static class HQExtensions
 
 		foreach (Airbase airbase in sortedBases)
 		{
+			if (airbase == exclude) continue;
 			foreach (var hangar in airbase.hangars)
 			{
 				if (hangar != null && !hangar.Disabled && hangar.availableAircraft.Any(definitions.Contains))

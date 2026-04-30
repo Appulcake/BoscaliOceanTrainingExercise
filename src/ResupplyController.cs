@@ -11,6 +11,7 @@ public class ResupplyController : NetworkBehaviour
 {
 	[SerializeField] private Aircraft aircraft;
 	[SerializeField] private AircraftDefinition[] resupplyAircrafts;
+	[SerializeField] private Airbase attachedAirbase;
 	private bool resupplyCalled;
 	[SyncVar] private Aircraft resupplyAircraft;
 
@@ -43,7 +44,7 @@ public class ResupplyController : NetworkBehaviour
 
 	private IEnumerator ResupplyCoroutine()
 	{
-		if (!aircraft.NetworkHQ.GetNearestAircraftCapableAirbase(aircraft.transform.position, resupplyAircrafts, out var airbase)) yield break;
+		if (!aircraft.NetworkHQ.GetNearestAircraftCapableAirbase(aircraft.transform.position, resupplyAircrafts, out var airbase, attachedAirbase)) yield break;
 
 		var def = resupplyAircrafts[0];
 		var livery = new LiveryKey(def.aircraftParameters.GetRandomLiveryForFaction(aircraft.NetworkHQ.faction));
