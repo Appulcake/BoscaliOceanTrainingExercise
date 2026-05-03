@@ -22,11 +22,9 @@
 
 - lfd weapons overhaul in general
 - lfd balance
-- ram-45 need to add soft launch back
 - finish swap system
 - argus sam turrets?
 - helicopter speed matching
-- annex ciws mounts
 - ui
 - ui
 - ui

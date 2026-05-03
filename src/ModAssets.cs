@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Mirage;
+using NuclearOption.Networking;
 using UnityEngine;
 
 namespace NOComponentWIP;

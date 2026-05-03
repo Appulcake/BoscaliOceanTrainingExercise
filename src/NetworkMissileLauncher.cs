@@ -31,6 +31,8 @@ public class NetworkMissileLauncher : Weapon
     private readonly SemaphoreSlim firingSemaphore = new SemaphoreSlim(1, 1);
     private float lastLaunchFinishTime;
 
+    public bool Reloading => reloading;
+
     private int magazineCapacity;
     private int ReserveMagazineCount => Mathf.Max(0, magazineCount);
 
@@ -219,7 +221,7 @@ public class NetworkMissileLauncher : Weapon
 
     private bool AreBayDoorsFullyOpen()
     {
-        if (bayDoors == null || bayDoors.Length == 0)
+        if ((bayDoors == null || bayDoors.Length == 0) && (hardpoint?.bayDoors == null || hardpoint?.bayDoors.Length == 0))
         {
             return true;
         }

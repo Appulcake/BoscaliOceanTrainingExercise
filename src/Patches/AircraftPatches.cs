@@ -14,7 +14,6 @@ public class AircraftPatches
 	{
 		var bridge = __instance.GetComponent<ShipPartBridge>();
 		if (bridge == null) return true;
-		bridge.SetSimplePhysics();
 		
 		ColorLog<Unit>.Info("Setting " + __instance.unitName + " physics to Simplified");
 		foreach (UnitPart item in __instance.partLookup)
@@ -25,6 +24,8 @@ public class AircraftPatches
 		__instance.rb.ResetCenterOfMass();
 		__instance.rb.ResetInertiaTensor();
 		__instance.simplePhysics = true;
+		
+		bridge.SetSimplePhysics();
 		return false;
 	}
 	
@@ -108,7 +109,7 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.ReturnToInventory))]
 	[HarmonyPostfix]
-	static void ReturnToInventory_Postfix(Aircraft __instance, ref bool __state)
+	static void ReturnToInventory_Postfix(Aircraft __instance, bool __state)
 	{
 		if (!__state) return;
 		__instance.NetworkHQ.AddSupplyUnit(__instance.definition, -1);

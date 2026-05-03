@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using Mirage;
 using NOComponentWIP.Patches;
+using NuclearOption.Networking;
 using UnityEngine;
 
 namespace NOComponentWIP;
@@ -21,28 +22,37 @@ public class ResupplyController : NetworkBehaviour
 	
 	public bool ResupplyCalled => resupplyCalled;
 
+	private Player player;
+
 	private void Update()
 	{
 		if (!aircraft.LocalSim || aircraft.Player == null) return;
-		var player = aircraft.pilots[0]?.playerState?.player;
+		player = aircraft.Player;
 		if (player == null) return;
+		if (!GameManager.IsLocalAircraft(aircraft)) return;
 
 		if (resupplyCalled) return;
-		if (player.GetButtonDown("Call Resupply"))
+		if (GameManager.playerInput.GetButtonDown("Call Resupply"))
 		{
-			CmdRequestResupply();
+			CmdRequestResupply(false);
+		} else if (GameManager.playerInput.GetButtonDown("Call Resupply - Player"))
+		{
+			CmdRequestResupply(true);
 		}
 	}
 	
 	[ServerRpc]
-	private void CmdRequestResupply()
+	private void CmdRequestResupply(bool player)
 	{
 		if (resupplyCalled) return;
-		StartCoroutine(ResupplyCoroutine());
-		resupplyCalled = true;
+		StartCoroutine(ResupplyCoroutine(player));
+		if (!player)
+		{
+			resupplyCalled = true;
+		}
 	}
 
-	private IEnumerator ResupplyCoroutine()
+	private IEnumerator ResupplyCoroutine(bool player)
 	{
 		if (!aircraft.NetworkHQ.GetNearestAircraftCapableAirbase(aircraft.transform.position, resupplyAircrafts, out var airbase, attachedAirbase)) yield break;
 
@@ -71,9 +81,24 @@ public class ResupplyController : NetworkBehaviour
 		var takeoffWait = new WaitUntilOrTimeout(() => pilot.currentState is AIHeloTransportState, 120f);
 		yield return takeoffWait;
 		if (takeoffWait.IsTimeout) yield break;
+
+		if (player)
+		{
+			AircraftSwitcher.i.SwitchAircraft(this.player, aircraft, resupplyAircraft);
+			resupplyAircraft.onDisableUnit += ReturnToAircraft;
+		}
+		else
+		{
+			var playerTransportState = new AIHeloPlayerNavalResupply(spawnedAircraft, aircraft);
+			pilot.SwitchState(playerTransportState);
+		}
 		
-		var playerTransportState = new AIHeloPlayerNavalResupply(spawnedAircraft, aircraft);
-		pilot.SwitchState(playerTransportState);
+		
+	}
+
+	private void ReturnToAircraft(Unit unit)
+	{
+		AircraftSwitcher.i.SwitchAircraft(this.player, resupplyAircraft, aircraft);
 	}
 }
 

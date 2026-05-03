@@ -1,9 +1,12 @@
+using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using Mirage;
 using NuclearOption.Networking;
 using NuclearOption.SceneLoading;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NOComponentWIP;
 
@@ -56,7 +59,6 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 	[ClientRpc]
 	private void CmdSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
-		oldAircraft?.SetLocalSim(oldAircraft.CheckIfLocalSim());
 		newAircraft?.SetLocalSim(newAircraft.CheckIfLocalSim());
 		
 		if (GameManager.IsLocalPlayer(player))
@@ -89,7 +91,7 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 					Destroy(MFDAppManager.i.gameObject);
 				}
 				
-				var oldCockpit = newAircraft.cockpit?.GetComponentInChildren<Cockpit>();
+				var oldCockpit = oldAircraft.cockpit?.GetComponentInChildren<Cockpit>();
 				if (oldCockpit != null)
 				{
 					oldCockpit.enabled = false;
@@ -130,6 +132,10 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 				newAircraft.weaponManager.ClearTargetList();
 			}
 		}
+		else
+		{
+			oldAircraft?.SetLocalSim(oldAircraft.CheckIfLocalSim());
+		}
 	}
 }
 
@@ -140,9 +146,10 @@ public class AircraftSwitcherSpawnPatch
 	[HarmonyPostfix]
 	private static async UniTask<MapLoader.LoadResult> Postfix(UniTask<MapLoader.LoadResult> __result, MapLoader.SceneKey key)
 	{
+		
 		MapLoader.LoadResult status = await __result;
 
-		if (status == MapLoader.LoadResult.ChangedScene && key.Path.Contains("GameWorld"))
+		if (status == MapLoader.LoadResult.ChangedScene && key.Path.Contains("GameWorld") && NetworkManagerNuclearOption.i.Server.Active)
 		{
 			SetupScene();
 		}
@@ -151,6 +158,7 @@ public class AircraftSwitcherSpawnPatch
 
 	private static void SetupScene()
 	{
+		if (!NetworkManagerNuclearOption.i.Server.Active) return;
 		var target = GameObject.Find("SceneEssentials");
 
 		if (ModAssets.i.networkModSingletons != null)
@@ -166,5 +174,16 @@ public class AircraftSwitcherSpawnPatch
 		
 		
 		
+	}
+}
+
+[HarmonyPatch(typeof(NetworkManagerNuclearOption))]
+public class RegisterPatch
+{
+	[HarmonyPatch(nameof(NetworkManagerNuclearOption.RegisterPrefabs))]
+	[HarmonyPostfix]
+	private static void RegisterPrefabs_Postfix(NetworkManagerNuclearOption __instance)
+	{
+		__instance.ClientObjectManager.RegisterPrefab(ModAssets.i.networkModSingletons.GetNetworkIdentity());
 	}
 }

@@ -30,6 +30,7 @@ public class Plugin : BaseUnityPlugin
 			if (AircraftSwitcher.i == null) return;
 			if (!GameManager.GetLocalPlayer(out NuclearOption.Networking.Player player)) return;
 			if (!GameManager.GetLocalAircraft(out var aircraft)) return;
+			if (aircraft.weaponManager.targetList.Count == 0) return;
 			var targetUnit = aircraft.weaponManager.targetList[0];
 			if (targetUnit == null || targetUnit is not Aircraft newAircraft) return;
 			AircraftSwitcher.i.SwitchAircraft(player, aircraft, newAircraft);
@@ -50,8 +51,11 @@ public static class Mod_Input
 		"Next Unit",
 		"Previous Unit",
 		"Call Resupply",
+		"Call Resupply - Player",
 		"Select/Deselect FOB",
-		"Control UI - Select"
+		"Control UI - Select",
+		"Next Camera",
+		"Previous Camera"
 	];
 	
 	[HarmonyPatch(typeof(InputManager_Base), nameof(InputManager_Base.Awake))]

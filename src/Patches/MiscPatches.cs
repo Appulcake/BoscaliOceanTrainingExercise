@@ -20,8 +20,6 @@ public static class WeaponStationPatches
     [HarmonyPostfix]
     static void LaunchMount_Postfix(WeaponStation __instance, ref int ___weaponIndex)
     {
-        
-        
         if (___weaponIndex >= __instance.Weapons.Count)
         {
             var lastWeapon = __instance.Weapons[__instance.Weapons.Count - 1];
@@ -55,7 +53,10 @@ public static class WeaponStationPatches
 
     private static bool IsWeaponEmpty(object weapon)
     {
-        if (weapon is NetworkMissileLauncher nml) return nml.GetAmmoTotal() <= 0;
+        if (weapon is NetworkMissileLauncher nml)
+        {
+            return nml.GetAmmoTotal() <= 0 || nml.GetAmmoLoaded() <= 0 || nml.Reloading;
+        }
         if (weapon is Deployer d) return d.GetAmmoTotal() <= 0;
         return false;
     }
@@ -652,6 +653,149 @@ public static class TargetCamPatches
     {
         if (__instance.aircraft.Player == null) return false;
         return true;
+    }
+}
+
+[HarmonyPatch(typeof(AimSolver))]
+public static class AimSolverPatches
+{
+    /*[HarmonyPrefix]
+    [HarmonyPatch(nameof(AimSolver.RunSim))]
+    private static bool RunSim_Prefix(AimSolver __instance, GlobalPosition muzzlePosition, GlobalPosition targetPosition, Vector3 simpleLead, Vector3 targetVel, float estimatedTimeToTarget)
+    {
+        if (!(Time.timeSinceLevelLoad - __instance.lastSim < __instance.simulationInterval))
+        {
+            __instance.lastSim = Time.timeSinceLevelLoad;
+            Vector3 initialVelocity = ((__instance.attachedUnit.speed > 1f) ? __instance.attachedUnit.rb.GetPointVelocity(__instance.firingTransform.position) : Vector3.zero) + simpleLead.normalized * __instance.weaponInfo.muzzleVelocity;
+            if (ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit.definition))
+            {
+                __instance.simCorrection = ImprovedTrajectorySim(__instance.weaponInfo, initialVelocity, muzzlePosition, targetPosition, targetVel, __instance.targetAccelSmoothed, 2000, out var _);
+            }
+            else
+            {
+                __instance.simCorrection = -Kinematics.TrajectorySim(__instance.weaponInfo, initialVelocity, muzzlePosition, targetPosition, targetVel, __instance.targetAccelSmoothed, 0.1f, out var _);
+            }
+            if (__instance.simCorrectionSmoothed == Vector3.zero)
+            {
+                __instance.simCorrectionSmoothed = __instance.simCorrection;
+            }
+        }
+        
+        return false;
+    }*/
+
+    private static Vector3 ImprovedTrajectorySim(WeaponInfo weaponInfo, Vector3 initialVelocity, GlobalPosition initialPosition, GlobalPosition targetPos, Vector3 targetVel, Vector3 targetAccel, int maxSteps, out float timeToTarget)
+    {
+        var dt = Time.fixedDeltaTime;
+
+        var t = 0f;
+
+        var bestDist = float.MaxValue;
+        var bestPos = initialPosition.AsVector3();
+        var bestTarget = targetPos.AsVector3();
+        var bestTime = 0f;
+
+        for (int i = 0; i < maxSteps; i++)
+        {
+            targetVel += targetAccel * dt;
+            targetPos += targetVel * dt;
+            
+            initialVelocity.y -= 9.81f * dt * weaponInfo.gravMult;
+            initialVelocity -= initialVelocity.sqrMagnitude * weaponInfo.dragCoef * dt * initialVelocity.normalized / weaponInfo.muzzleVelocity;
+            
+            initialPosition += initialVelocity * dt;
+            
+            var diff = initialPosition - targetPos;
+            var dist = diff.sqrMagnitude;
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestPos = initialPosition.AsVector3();
+                bestTarget = targetPos.AsVector3();
+                bestTime = t;
+            }
+
+            t += dt;
+
+            if (i > 10 && dist > bestDist * 2f) break;
+        }
+        
+        Vector3 final = bestPos - bestTarget;
+        
+        timeToTarget = bestTime;
+        return final;
+    }
+    
+    /*public static Vector3 ImprovedTrajectorySim(WeaponInfo weaponInfo, Vector3 initialVelocity, GlobalPosition initialPosition, GlobalPosition targetPos, Vector3 targetVel, Vector3 targetAccel, float timeStep, out float timeToTarget)
+    {
+        foreach (GameObject visualization in Kinematics.visualizations)
+        {
+            NetworkSceneSingleton<Spawner>.i.DestroyLocal(visualization, 1f);
+        }
+        Kinematics.visualizations.Clear();
+        timeToTarget = 0f;
+        GlobalPosition globalPosition = targetPos;
+        Vector3 vector = targetVel;
+        GlobalPosition globalPosition2 = initialPosition;
+        Vector3 vector2 = initialVelocity;
+        bool flag = false;
+        int num = 0;
+        while (!flag)
+        {
+            timeStep += 0.02f;
+            if (PlayerSettings.debugVis)
+            {
+                GameObject gameObject = NetworkSceneSingleton<Spawner>.i.SpawnLocal(GameAssets.i.debugArrowGreen, Datum.origin);
+                gameObject.transform.position = globalPosition2.ToLocalPosition();
+                gameObject.transform.rotation = Quaternion.LookRotation(vector2);
+                gameObject.transform.localScale = new Vector3(2f, 2f, vector2.magnitude * timeStep);
+                Kinematics.visualizations.Add(gameObject);
+            }
+            Vector3 vector3 = 9.81f * timeStep * weaponInfo.gravMult * Vector3.up + vector2.sqrMagnitude * weaponInfo.dragCoef * timeStep * vector2.normalized / weaponInfo.muzzleVelocity;
+            vector += targetAccel * timeStep;
+            globalPosition += vector * timeStep;
+            vector2 -= vector3 * 0.3f;
+            globalPosition2 += vector2 * timeStep;
+            vector2 -= vector3 * 0.7f;
+            flag = Vector3.Dot(vector2, globalPosition - globalPosition2) <= 0f || Vector3.Dot(vector2, vector2 - vector) <= 0f;
+            timeToTarget += timeStep;
+            num++;
+            if (num > 100)
+            {
+                Debug.LogError($"max TrajectorySim iterations exceeded. InitialVelocity: {initialVelocity}, TargetVelocity: {targetVel}, TargetAccel: {targetAccel}, simVel: {vector2}");
+                break;
+            }
+        }
+        globalPosition2 -= 0.5f * timeStep * vector2;
+        globalPosition -= 0.5f * timeStep * vector;
+        if (PlayerSettings.debugVis)
+        {
+            GameObject gameObject2 = NetworkSceneSingleton<Spawner>.i.SpawnLocal(GameAssets.i.debugArrowGreen, Datum.origin);
+            gameObject2.transform.position = targetPos.ToLocalPosition();
+            gameObject2.transform.rotation = Quaternion.LookRotation(globalPosition - targetPos);
+            gameObject2.transform.localScale = new Vector3(1f, 1f, FastMath.Distance(globalPosition, targetPos));
+            Kinematics.visualizations.Add(gameObject2);
+        }
+        return Vector3.ProjectOnPlane(globalPosition2 - globalPosition, vector2);
+    }*/
+
+}
+
+[HarmonyPatch(typeof(BulletSim.Bullet))]
+public class BulletPatches
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(BulletSim.Bullet.TrajectoryTrace))]
+    private static void TrajectoryTrace_Postfix(BulletSim.Bullet __instance, WeaponInfo info, Unit owner)
+    {
+        if (__instance.impacted && !__instance.active && info.blastDamage > 0)
+        {
+            if (NetworkManagerNuclearOption.i.Server.Active)
+            {
+                DamageEffects.BlastFrag(info.blastDamage, __instance.position.ToLocalPosition(), owner.persistentID, PersistentID.None);
+            }
+        }
     }
 }
 
