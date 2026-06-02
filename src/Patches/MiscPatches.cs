@@ -154,35 +154,41 @@ public static class SpawnerPatches
 [HarmonyPatch(typeof(Hangar))]
 public static class HangarPatches
 {
-
     [HarmonyPatch(nameof(Hangar.SpawnAircraft))]
     [HarmonyPrefix]
     private static bool SpawnAircraft_Prefix(Hangar __instance, Player player, AircraftDefinition definition, Loadout loadout, float fuelLevel, LiveryKey livery)
     {
+        Plugin.Logger.LogInfo("SpawnAircraft called");
+        
         if (!ModAssets.i.shipDefinitions.Contains(definition)) return true;
+        
+        Plugin.Logger.LogInfo("SpawnAircraft valid");
 
-        bool isShip = __instance.attachedUnit is Ship;
+        bool attachedUnit = __instance.attachedUnit is Ship or Aircraft;
         bool isDock = __instance.attachedUnit != null && __instance.attachedUnit.definition == ModAssets.i.dockDef;
         
         Transform spawnTransform = __instance.spawnTransform;
+        
+        Plugin.Logger.LogInfo("SpawnAircraft orig posit: " + spawnTransform.GlobalPosition().AsVector3());
+        
         Vector3 offset = definition.spawnOffset;
         
-        if (isShip)
+        if (attachedUnit)
         {
             offset.z -= 200f; 
         }
         
         GlobalPosition gp = spawnTransform.GlobalPosition() + spawnTransform.up * offset.y + spawnTransform.forward * offset.z;
         
-        if (isShip || isDock)
+        Plugin.Logger.LogInfo("SpawnAircraft new posit: " + gp.AsVector3());
+        
+        if (attachedUnit || isDock)
         {
-            gp.y = Datum.SeaLevel.y;
+            gp.y = Datum.SeaLevel.y + offset.y;
         }
         
-        gp = gp + __instance.spawnTransform.up * definition.spawnOffset.y + __instance.spawnTransform.forward * definition.spawnOffset.z;
-        
         Quaternion spawnRotation = spawnTransform.rotation;
-        if (isShip)
+        if (attachedUnit)
         {
             Vector3 euler = spawnRotation.eulerAngles;
             spawnRotation = Quaternion.Euler(0f, euler.y, 0f);

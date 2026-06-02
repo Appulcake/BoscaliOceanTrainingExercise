@@ -162,10 +162,39 @@ public class AircraftPatches
 		
 		return false;
 	}
+	
+	[HarmonyPatch(nameof(Aircraft.OnStartClient))]
+	[HarmonyPrefix]
+	private static void OnStartClient_Prefix(Aircraft __instance, ref Vector3 __state)
+	{
+		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return;
+
+		__state = __instance.definition.spawnOffset;
+
+		if (!__instance.IsServer)
+		{
+			bool attachedUnit = __instance.NetworkspawningHangar.attachedUnit is Ship or Aircraft;
+			bool isDock = __instance.NetworkspawningHangar.attachedUnit != null && __instance.NetworkspawningHangar.attachedUnit.definition == ModAssets.i.dockDef;
+
+			Transform spawnTransform = __instance.NetworkspawningHangar.spawnTransform;
+		
+			if (attachedUnit)
+			{
+				__instance.definition.spawnOffset.z -= 200f; 
+			}
+
+			if (attachedUnit || isDock)
+			{
+				var difference = spawnTransform.GlobalPosition().y - Datum.SeaLevel.y;
+				__instance.definition.spawnOffset.y -= difference;
+			}
+		}
+	}
+	
 
 	[HarmonyPatch(nameof(Aircraft.OnStartClient))]
 	[HarmonyPostfix]
-	private static void OnStartClient_Postfix(Aircraft __instance)
+	private static void OnStartClient_Postfix(Aircraft __instance, ref Vector3 __state)
 	{
 		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return;
 
@@ -174,6 +203,11 @@ public class AircraftPatches
 			__instance.controlInputs.throttle = 0f;
 			__instance.SetGear(false);
 			__instance.GearStateChanged(false);
+		}
+
+		if (!__instance.IsServer)
+		{
+			__instance.definition.spawnOffset = __state;
 		}
 	}
 	

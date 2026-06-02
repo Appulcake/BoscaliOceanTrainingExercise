@@ -36,8 +36,8 @@ public class BridgeCamManager : MonoBehaviour
 
 	public void CycleCam(int direction)
 	{
-		CameraStateManager.i.cockpitState.panView = 0f;
-		CameraStateManager.i.cockpitState.tiltView = 0f;
+		CameraStateManager.i?.cockpitState?.panView = 0f;
+		CameraStateManager.i?.cockpitState?.tiltView = 0f;
 		currentIndex = (currentIndex + direction + stations.Length) % stations.Length;
 		
 		//FlightHud.i?.cockpitTransform = stations[currentIndex];
