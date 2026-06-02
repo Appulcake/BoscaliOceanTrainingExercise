@@ -38,7 +38,7 @@ public class CargoUIController : MonoBehaviour
         
         //foreach (Transform child in scrollContent) Destroy(child.gameObject);
         
-        foreach (int unitId in _manager.unitManifest)
+        foreach (int unitId in LoadoutBridge.SelectedUnitIDs)
         {
             if (_workingManifest.ContainsKey(unitId)) _workingManifest[unitId]++;
             else _workingManifest[unitId] = 1;
@@ -47,6 +47,7 @@ public class CargoUIController : MonoBehaviour
         for (int i = 0; i < _manager.availableUnits.Count; i++)
         {
             var unit = _manager.availableUnits[i];
+            //if (unit.eventContent && !MissionManager.AllowEventContent) continue;
             var rowObj = Instantiate(ModAssets.i.CargoEditorRow, scrollContent);
             
             var rowController = rowObj.GetComponent<UnitRowController>();

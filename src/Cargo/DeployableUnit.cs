@@ -12,6 +12,7 @@ public abstract class DeployableUnit : ScriptableObject
 	public int pointCost;
 	public Sprite icon;
 	public string description;
+	public bool eventContent;
 	public virtual UnitDefinition UnitDefinition { get; } = null;
 
 	public abstract Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft, out bool spawned);
@@ -78,6 +79,30 @@ public class DeployableAircraft : DeployableUnit
 		if (result.Allowed)
 		{
 			spawned = true;
+			aircraft.NetworkHQ.AddSupplyUnit(unitDefinition, 1);
+		}
+
+		return null;
+	}
+}
+
+[CreateAssetMenu(fileName = "New DeployableMissile", menuName = "Bote/DeployableMissile")]
+public class DeployableMissile : DeployableUnit
+{
+	public MissileDefinition unitDefinition;
+	public override UnitDefinition UnitDefinition => unitDefinition;
+	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+		out bool spawned)
+	{
+		spawned = false;
+
+		var spawnedUnit =
+			NetworkSceneSingleton<Spawner>.i.SpawnMissile(unitDefinition, position, rotation, spawnVel, null, aircraft);
+
+		if (spawnedUnit != null)
+		{
+			spawned = true;
+			return spawnedUnit;
 		}
 
 		return null;

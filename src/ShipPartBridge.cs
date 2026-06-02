@@ -138,10 +138,6 @@ public class ShipPartBridge : MonoBehaviour
 		{
 			return;
 		}
-		foreach (AircraftShipPart part in parts)
-		{
-			JobManager.Add(part.SetupJob());
-		}
 
 		shipControlUI?.Initialize(aircraft, this);
 		
@@ -177,6 +173,11 @@ public class ShipPartBridge : MonoBehaviour
 		foreach (var part in parts)
 		{
 			part.CreateJoints();
+			
+			if (!JobManager.i.shipParts.Contains(part.JobPart))
+			{
+				JobManager.Add(part.SetupJob());
+			}
 		}
 	}
 
@@ -185,6 +186,9 @@ public class ShipPartBridge : MonoBehaviour
 		foreach (var part in parts)
 		{
 			part.MergeWithParent();
+			JobManager.Remove(ref part.JobPart);
+			ShipPart.DisposeJobFields(ref part.JobFields);
 		}
+		
 	}
 }

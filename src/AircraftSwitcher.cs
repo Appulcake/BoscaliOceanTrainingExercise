@@ -14,12 +14,14 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 {
 	public void SwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
+		if (GameManager.gameState != GameState.SinglePlayer) return;
 		RpcSwitchAircraft(player, oldAircraft, newAircraft);
 	}
 	
 	[ServerRpc(requireAuthority = false)]
 	private void RpcSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
+		if (GameManager.gameState != GameState.SinglePlayer) return;
 		if (oldAircraft == null || newAircraft == null) return;
 		if (player.Identity.Owner != oldAircraft.Identity.Owner) return;
 		if (newAircraft.Player != null) return;
@@ -38,6 +40,10 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 		}
 		oldAircraft.pilots[0].player = null;
 		oldAircraft.SetLocalSim(oldAircraft.CheckIfLocalSim());
+		if (oldAircraft.LocalSim)
+		{
+			oldAircraft.partChecker = new Aircraft.PartChecker(oldAircraft);
+		}
 		oldAircraft.weaponManager.ClearTargetList();
 
 		if (UnitRegistry.TryGetPersistentUnit(oldAircraft.persistentID, out var persistentUnit))
@@ -60,6 +66,10 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 	private void CmdSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
 		newAircraft?.SetLocalSim(newAircraft.CheckIfLocalSim());
+		if (newAircraft.LocalSim)
+		{
+			newAircraft.partChecker = new Aircraft.PartChecker(newAircraft);
+		}
 		
 		if (GameManager.IsLocalPlayer(player))
 		{
@@ -159,6 +169,8 @@ public class AircraftSwitcherSpawnPatch
 	private static void SetupScene()
 	{
 		if (!NetworkManagerNuclearOption.i.Server.Active) return;
+		if (GameManager.gameState != GameState.SinglePlayer) return;
+		
 		var target = GameObject.Find("SceneEssentials");
 
 		if (ModAssets.i.networkModSingletons != null)
@@ -171,9 +183,6 @@ public class AircraftSwitcherSpawnPatch
 		{
 			var singletons = Object.Instantiate(ModAssets.i.modSingletons, target.transform, true);
 		}
-		
-		
-		
 	}
 }
 

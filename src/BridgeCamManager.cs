@@ -13,6 +13,7 @@ public class BridgeCamManager : MonoBehaviour
 
 	private void Start()
 	{
+		if (stations == null) return;
 		if (stations.Length == 0) return;
 		this.transform.position = stations[0].position;
 		this.transform.rotation = stations[0].rotation;

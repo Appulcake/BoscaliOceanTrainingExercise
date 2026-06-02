@@ -71,7 +71,7 @@ public class AircraftShipPart : ShipPart
 		    rb.angularVelocity = attachInfo.parentPart.rb.angularVelocity;
 		    rb.maxLinearVelocity = 60f;
 	    }
-	    if (breakJointStrength > 0f)
+	    /*if (breakJointStrength > 0f)
 	    {
 	        ConfigurableJoint configurableJoint = base.gameObject.AddComponent<ConfigurableJoint>();
 	        configurableJoint.connectedBody = connectedBody;
@@ -92,7 +92,7 @@ public class AircraftShipPart : ShipPart
 	        configurableJoint.anchor = (base.xform.InverseTransformPoint(attachInfo.parentPart.xform.position) + attachInfo.localPosition) / 2f;
 	        float breakForce = rb.mass * breakJointStrength;
 	        configurableJoint.breakForce = breakForce;
-	    }
+	    }*/
 	    displacement *= 0f;
 	    Flood();
 	    ShipPart shipPart = attachInfo.parentPart as ShipPart;

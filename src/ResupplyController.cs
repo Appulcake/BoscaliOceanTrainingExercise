@@ -35,7 +35,7 @@ public class ResupplyController : NetworkBehaviour
 		if (GameManager.playerInput.GetButtonDown("Call Resupply"))
 		{
 			CmdRequestResupply(false);
-		} else if (GameManager.playerInput.GetButtonDown("Call Resupply - Player"))
+		} else if (GameManager.playerInput.GetButtonDown("Call Resupply - Player") && GameManager.gameState == GameState.SinglePlayer)
 		{
 			CmdRequestResupply(true);
 		}
