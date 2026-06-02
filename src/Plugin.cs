@@ -47,14 +47,14 @@ public static class Mod_Input
 	
 	private static List<string> customActions =
 	[
-		"Menu",
+		//"Menu",
 		"Deploy Unit",
 		"Next Unit",
 		"Previous Unit",
 		"Call Resupply",
 		"Call Resupply - Player",
 		"Select/Deselect FOB",
-		"Control UI - Select",
+		//"Control UI - Select",
 		"Next Camera",
 		"Previous Camera"
 	];
