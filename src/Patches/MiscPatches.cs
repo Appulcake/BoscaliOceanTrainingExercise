@@ -158,18 +158,12 @@ public static class HangarPatches
     [HarmonyPrefix]
     private static bool SpawnAircraft_Prefix(Hangar __instance, Player player, AircraftDefinition definition, Loadout loadout, float fuelLevel, LiveryKey livery)
     {
-        Plugin.Logger.LogInfo("SpawnAircraft called");
-        
         if (!ModAssets.i.shipDefinitions.Contains(definition)) return true;
-        
-        Plugin.Logger.LogInfo("SpawnAircraft valid");
 
         bool attachedUnit = __instance.attachedUnit is Ship or Aircraft;
         bool isDock = __instance.attachedUnit != null && __instance.attachedUnit.definition == ModAssets.i.dockDef;
         
         Transform spawnTransform = __instance.spawnTransform;
-        
-        Plugin.Logger.LogInfo("SpawnAircraft orig posit: " + spawnTransform.GlobalPosition().AsVector3());
         
         Vector3 offset = definition.spawnOffset;
         
@@ -179,8 +173,6 @@ public static class HangarPatches
         }
         
         GlobalPosition gp = spawnTransform.GlobalPosition() + spawnTransform.up * offset.y + spawnTransform.forward * offset.z;
-        
-        Plugin.Logger.LogInfo("SpawnAircraft new posit: " + gp.AsVector3());
         
         if (attachedUnit || isDock)
         {
