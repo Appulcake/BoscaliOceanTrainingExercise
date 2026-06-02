@@ -12,7 +12,6 @@
 
 - escort spawning
 - unit costs
-- top speed throttle "afterburner"
 - swap to/from AI? (in progress)
 - fob for aircraft?
 - damage control UI
@@ -20,11 +19,11 @@
 
 ## todo list for me yipee
 
-- lfd weapons overhaul in general
 - lfd balance
 - finish swap system
 - argus sam turrets?
 - helicopter speed matching
+- ships can technically still recover themselves
 - ui
 - ui
 - ui

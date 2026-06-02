@@ -7,6 +7,7 @@ public class PlayerShipPropulsion : MonoBehaviour, IEngine
     [SerializeField] private ShipPart part;
     [SerializeField] private UnitPart[] criticalParts;
     [SerializeField] private float thrust = 500000f;
+    [SerializeField] private float maxThrust = 1000000f;
     [SerializeField] private float steeringThrust = 100000f;
     [SerializeField] private float momentumFactor = 0.05f;
     [SerializeField] private float damageThreshold = 10f;
@@ -59,24 +60,27 @@ public class PlayerShipPropulsion : MonoBehaviour, IEngine
         var inputs = aircraft.GetInputs();
         
         float combinedThrust = Mathf.Clamp(inputs.throttle + inputs.pitch, -1f, 1f);
-        
         float combinedSteer = Mathf.Clamp(inputs.yaw + inputs.roll, -1f, 1f);
 
         if (!aircraft.LocalSim) return;
-        
+    
         int num = (!underwater || thrustTransform.position.y < Datum.LocalSeaY) ? 1 : 0;
-        
+    
         float forwardSpeed = Vector3.Dot(aircraft.rb.velocity, aircraft.transform.forward);
         float steeringTarget = (1f + Mathf.Abs(forwardSpeed) * momentumFactor) * combinedSteer;
-        
+    
         thrustInputSmoothed = FastMath.SmoothDamp(thrustInputSmoothed, combinedThrust, ref thrustSmoothSpeed, inputSmoothing);
         steeringInputSmoothed = FastMath.SmoothDamp(steeringInputSmoothed, steeringTarget, ref steeringSmoothSpeed, steerSmoothing);
         
-        Vector3 forwardForce = num * thrustInputSmoothed * thrust * transform.forward;
+        bool isFlankSpeed = inputs.throttle > 0.9f && (inputs.throttle + inputs.pitch) > 0.9f;
+        
+        float currentMaxThrust = isFlankSpeed ? maxThrust : thrust;
+        
+        Vector3 forwardForce = num * thrustInputSmoothed * currentMaxThrust * transform.forward;
         Vector3 sideForce = num * steeringInputSmoothed * steeringThrust * -transform.right;
-        
+    
         aircraft.rb.AddForceAtPosition(forwardForce + sideForce, thrustTransform.position);
-        
+    
         UpdateEffects(combinedThrust, forwardSpeed);
     }
 

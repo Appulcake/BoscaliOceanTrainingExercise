@@ -25,7 +25,8 @@ public class Plugin : BaseUnityPlugin
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.R))
+		if (GameManager.gameState != GameState.SinglePlayer) return;
+		if (Input.GetKeyDown(KeyCode.Semicolon))
 		{
 			if (AircraftSwitcher.i == null) return;
 			if (!GameManager.GetLocalPlayer(out NuclearOption.Networking.Player player)) return;

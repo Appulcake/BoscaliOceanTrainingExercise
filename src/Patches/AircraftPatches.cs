@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using HarmonyLib;
@@ -136,7 +137,7 @@ public class AircraftPatches
 		var ship = __instance;
 		var ab = ship.GetComponent<Airbase>();
 		
-		if (ship.speed < 10f && ship.NetworkHQ != null && ship.NetworkHQ.AnyNearAirbaseInRange(ship.transform.position, out var airbase, 2000f, ab))
+		if ((ship.speed < 10f && ship.NetworkHQ.AnyNearAirbaseInRange(ship.transform.position, out var airbase, 2000f, ab)) && ship.NetworkHQ != null && !(ship.NetworkHQ.AnyNearAirbase(ship.transform.position, out var _) && ship.speed < 2f))
 		{
 			ship.ReturnToInventory();
 		}
@@ -175,4 +176,83 @@ public class AircraftPatches
 			__instance.GearStateChanged(false);
 		}
 	}
+	
+	[HarmonyPatch(nameof(Aircraft.LocalSimFixedUpdate))]
+    [HarmonyPrefix]
+    public static void LocalSimFixedUpdate_Prefix(Aircraft __instance)
+    {
+        try
+        {
+            if (__instance == null)
+            {
+                Debug.LogError("[AircraftDebug] __instance (Aircraft) is null!");
+                return;
+            }
+
+
+            try
+            {
+                var rb = __instance.CockpitRB();
+                if (rb == null)
+                {
+                    Debug.LogError("[AircraftDebug] CockpitRB() returned null.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[AircraftDebug] Exception thrown while calling CockpitRB(): {ex.Message}");
+            }
+            
+            if (__instance.partChecker == null)
+            {
+                Debug.LogError("[AircraftDebug] field 'partChecker' is null.");
+            }
+			
+            if (__instance.transform == null)
+            {
+                Debug.LogError("[AircraftDebug] 'base.transform' is null.");
+            }
+            
+            if (NetworkSceneSingleton<LevelInfo>.i == null)
+            {
+                Debug.LogError("[AircraftDebug] 'NetworkSceneSingleton<LevelInfo>.i' instance is null.");
+            }
+            if (__instance.controlSurfaces == null)
+            {
+                Debug.LogError("[AircraftDebug] 'controlSurfaces' list/array is null.");
+            }
+            else
+            {
+                int index = 0;
+                foreach (var surface in __instance.controlSurfaces)
+                {
+                    if (surface == null)
+                    {
+                        Debug.LogError($"[AircraftDebug] 'controlSurfaces' contains a null element at index {index}.");
+                    }
+                    index++;
+                }
+            }
+            
+            if (SceneSingleton<CombatHUD>.i != null)
+            {
+                try
+                {
+                    var hudAircraft = SceneSingleton<CombatHUD>.i.aircraft;
+                    if (hudAircraft == __instance && __instance.countermeasureManager == null)
+                    {
+                        Debug.LogError("[AircraftDebug] HUD matches this aircraft, but 'countermeasureManager' is null.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[AircraftDebug] Exception accessing CombatHUD data: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception criticalEx)
+        {
+            Debug.LogError($"[AircraftDebug] Critical failure inside prefix patch logic: {criticalEx}");
+        }
+    }
 }

@@ -155,21 +155,62 @@ public static class SpawnerPatches
 public static class HangarPatches
 {
 
-    [HarmonyPatch("SpawnAircraft")]
+    [HarmonyPatch(nameof(Hangar.SpawnAircraft))]
     [HarmonyPrefix]
     private static bool SpawnAircraft_Prefix(Hangar __instance, Player player, AircraftDefinition definition, Loadout loadout, float fuelLevel, LiveryKey livery)
     {
         if (!ModAssets.i.shipDefinitions.Contains(definition)) return true;
-        if (__instance.attachedUnit is not Ship && __instance.attachedUnit.definition != ModAssets.i.dockDef) return true;
 
-        GlobalPosition tempgp = __instance.spawnTransform.GlobalPosition();
-        tempgp.y = Datum.SeaLevel.y;
-        GlobalPosition gp = tempgp + __instance.spawnTransform.up * definition.spawnOffset.y + __instance.spawnTransform.forward * definition.spawnOffset.z;
+        bool isShip = __instance.attachedUnit is Ship;
+        bool isDock = __instance.attachedUnit != null && __instance.attachedUnit.definition == ModAssets.i.dockDef;
         
-        Aircraft aircraft = NetworkSceneSingleton<Spawner>.i.SpawnAircraft(player, definition.unitPrefab, loadout, fuelLevel, livery, gp, __instance.spawnTransform.rotation, __instance.GetVelocity(), __instance, __instance.attachedUnit.NetworkHQ, null, 1f, 0.5f);
+        Transform spawnTransform = __instance.spawnTransform;
+        Vector3 offset = definition.spawnOffset;
         
-        if (loadout == null) aircraft.Networkloadout = aircraft.weaponManager.SelectAIAircraftWeapons();
+        if (isShip)
+        {
+            offset.z -= 200f; 
+        }
+        
+        GlobalPosition gp = spawnTransform.GlobalPosition() + spawnTransform.up * offset.y + spawnTransform.forward * offset.z;
+        
+        if (isShip || isDock)
+        {
+            gp.y = Datum.SeaLevel.y;
+        }
+        
+        gp = gp + __instance.spawnTransform.up * definition.spawnOffset.y + __instance.spawnTransform.forward * definition.spawnOffset.z;
+        
+        Quaternion spawnRotation = spawnTransform.rotation;
+        if (isShip)
+        {
+            Vector3 euler = spawnRotation.eulerAngles;
+            spawnRotation = Quaternion.Euler(0f, euler.y, 0f);
+        }
+        
+        Aircraft aircraft = NetworkSceneSingleton<Spawner>.i.SpawnAircraft(
+            player, 
+            definition.unitPrefab, 
+            loadout, 
+            fuelLevel, 
+            livery, 
+            gp, 
+            spawnRotation, 
+            __instance.GetVelocity(), 
+            __instance, 
+            __instance.attachedUnit?.NetworkHQ, 
+            null, 
+            1f, 
+            0.5f
+        );
+        
+        if (loadout == null) 
+        {
+            aircraft.Networkloadout = aircraft.weaponManager.SelectAIAircraftWeapons();
+        }
+
         __instance.spawnedObject = aircraft.gameObject;
+        
         return false;
     }
 
@@ -534,6 +575,17 @@ public static class RadarPatches
             {
                 hq.radars.Remove(__instance);
             }
+        }
+    }
+
+    [HarmonyPatch(nameof(Radar.Update))]
+    [HarmonyPostfix]
+    private static void Update_Postfix(Radar __instance)
+    {
+        if (__instance.activated) return;
+        for (int i = 0; i < __instance.rotators.Length; i++)
+        {
+            __instance.rotators[i].transform.localEulerAngles -= __instance.rotators[i].axis * Time.deltaTime;
         }
     }
 }
