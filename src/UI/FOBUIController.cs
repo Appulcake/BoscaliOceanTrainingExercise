@@ -54,6 +54,9 @@ public class FOBUIController : MonoBehaviour
 	
 	private List<FOBAssetRow> uiRows = new List<FOBAssetRow>();
 	
+	private float rightMouseDownTime;
+	private bool rightMousePressed;
+	
 	public void Initialize(FOBManager manager, Aircraft aircraft, Vector3 center, List<FOBUnit> units, int maxPoints)
 	{
 		this.manager = manager;
@@ -135,7 +138,9 @@ public class FOBUIController : MonoBehaviour
 		var cam = buildCamera;
 		if (cam == null) return;
 		var ray = cam.ScreenPointToRay(Input.mousePosition);
-
+		
+		bool shortRightClicked = WasShortRightClickReleased();
+		
 		if (activeUnit != null)
 		{
 			Vector3 finalPoint = Vector3.zero;
@@ -208,7 +213,7 @@ public class FOBUIController : MonoBehaviour
 				}
 			}
 
-			if (Input.GetMouseButtonDown(1))
+			if (shortRightClicked)
 			{
 				Destroy(activeUnit);
 				activeUnit = null;
@@ -217,7 +222,7 @@ public class FOBUIController : MonoBehaviour
 		}
 		else
 		{
-			if (Input.GetMouseButtonDown(1))
+			if (shortRightClicked)
 			{
 				if (Physics.Raycast(ray, out RaycastHit hit))
 				{
@@ -289,6 +294,25 @@ public class FOBUIController : MonoBehaviour
 			
 			renderer.SetPropertyBlock(propertyBlock);
 		}
+	}
+	
+	private bool WasShortRightClickReleased()
+	{
+		if (Input.GetMouseButtonDown(1))
+		{
+			rightMouseDownTime = Time.unscaledTime;
+			rightMousePressed = true;
+		}
+		
+		if (!Input.GetMouseButtonUp(1) || !rightMousePressed)
+			return false;
+		
+		float heldDuration = Time.unscaledTime - rightMouseDownTime;
+		float maxClickDuration = Mathf.Max(PlayerSettings.clickDelay, 0.1f);
+		
+		rightMousePressed = false;
+		
+		return heldDuration <= maxClickDuration;
 	}
 
 	private void RefreshBudget()
