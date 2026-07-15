@@ -130,11 +130,30 @@ public class FOBUIController : MonoBehaviour
 		HandleInput();
 	}
 	
+	private float rightMouseDownTime;
+	private bool rightMousePressed;
+	
 	private void HandleInput()
 	{
 		var cam = buildCamera;
 		if (cam == null) return;
 		var ray = cam.ScreenPointToRay(Input.mousePosition);
+
+		bool shortRightclicked = false;
+		float maxClickDuration = Mathf.Max(PlayerSettings.clickDelay, 0.1f);
+		
+		if (Input.GetMouseButtonDown(1))
+		{
+			rightMouseDownTime = Time.unscaledTime;
+			rightMousePressed = true;
+		}
+		
+		if (Input.GetMouseButtonUp(1) && rightMousePressed)
+		{
+			var heldDuration = Time.unscaledTime - rightMouseDownTime;
+			shortRightclicked = heldDuration <= maxClickDuration;
+			rightMousePressed = false;
+		}
 
 		if (activeUnit != null)
 		{
@@ -208,7 +227,7 @@ public class FOBUIController : MonoBehaviour
 				}
 			}
 
-			if (Input.GetMouseButtonDown(1))
+			if (shortRightclicked)
 			{
 				Destroy(activeUnit);
 				activeUnit = null;
@@ -217,7 +236,7 @@ public class FOBUIController : MonoBehaviour
 		}
 		else
 		{
-			if (Input.GetMouseButtonDown(1))
+			if (shortRightclicked)
 			{
 				if (Physics.Raycast(ray, out RaycastHit hit))
 				{
