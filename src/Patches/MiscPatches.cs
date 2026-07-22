@@ -832,6 +832,10 @@ public static class AimSolverPatches
 
 }
 
+// Causes aircraft self-damage depending on ping, where the server sided visualOnly bullets trigger explosion impacts
+// to happen where client's plane is, sometimes inside it thus damaging it.
+// This path in vanilla isn't normally capable of applying damage as that'd come from client CmdClaimHit.
+/*
 [HarmonyPatch(typeof(BulletSim.Bullet))]
 public class BulletPatches
 {
@@ -848,6 +852,7 @@ public class BulletPatches
         }
     }
 }
+*/
 
 public static class TransformExtensions
 {
