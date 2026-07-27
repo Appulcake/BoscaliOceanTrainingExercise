@@ -204,42 +204,11 @@ public static class HangarPatches
         
         if (loadout == null) 
         {
-            aircraft.Networkloadout = aircraft.weaponManager.SelectAIAircraftWeapons();
+            aircraft.Networkloadout = aircraft.weaponManager.SelectAIAircraftWeapons(__instance.parentAirbase);
         }
 
         __instance.spawnedObject = aircraft.gameObject;
         
-        return false;
-    }
-
-    [HarmonyPatch("TrySpawnAircraft")]
-    [HarmonyPrefix]
-    public static bool TrySpawnAircraft_Prefix(Hangar __instance, ref Airbase.TrySpawnResult __result, Player player, AircraftDefinition definition, LiveryKey livery, Loadout loadout, float fuelLevel)
-    {
-        if (__instance is not RailHangar railHangar) return true;
-        if (!railHangar.IsServer) throw new MethodInvocationException("[Server] function 'TrySpawnAircraft' called when server not active");
-
-        if (!railHangar.CanSpawnAircraft(definition))
-        {
-            __result = default;
-            return false;
-        }
-
-        if (railHangar.waitForOpenBeforeSpawn)
-        {
-            var spawnQueue = new Hangar.QueuedAircraftToSpawn(player, definition, livery, loadout, fuelLevel);
-            railHangar.DoorSequenceRailLauncher(spawnQueue).Forget();
-        }
-        else
-        {
-            railHangar.SpawnAircraft(player, definition, loadout, fuelLevel, livery);
-            railHangar.DoorSequenceNormal().Forget();
-        }
-
-        if (player != null) player.FlyOwnedAirframe(definition);
-        else railHangar.attachedUnit.NetworkHQ.AddSupplyUnit(definition, -1);
-
-        __result = new Airbase.TrySpawnResult(true, railHangar, railHangar.waitForOpenBeforeSpawn);
         return false;
     }
 }
@@ -251,10 +220,10 @@ public static class TurretPatches
     [HarmonyPostfix]
     private static void AimTurret_PostfixVector3(Turret __instance)
     {
-        if (__instance.aimSafetyWeapon is not Gun gun) return;
+        if (__instance.aimSafetyWeapon is not Gun) return;
         if (!ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
-        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out _, 200f, -8193))
+        if (Physics.SphereCast(__instance.aimSafetyWeapon.transform.position + __instance.aimSafetyWeapon.transform.forward * 2f, 0.2f, __instance.aimSafetyWeapon.transform.forward, out _, 200f, -8193))
         {
             __instance.aimSafetyWeapon.Safety = true;
         }
@@ -335,6 +304,66 @@ public class AeroPartPatches
 [HarmonyPatch(typeof(Hardpoint))]
 public class HardpointPatches
 {
+    /*[HarmonyPatch(nameof(Hardpoint.SpawnMount))]
+    [HarmonyPrefix]
+    private static bool SpawnMount_Prefix(Hardpoint __instance, Aircraft aircraft, WeaponMount weaponMount, ref GameObject __result)
+    {
+        if (__instance.transform == null || __instance.part.IsDetached())
+        {
+            __result = null;
+        }
+        if (__instance.spawnedPrefab != null)
+        {
+            Debug.LogError("attempting to spawn " + weaponMount.mountName + " on pylon which is already occupied!");
+        }
+        Turret[] builtInTurrets = __instance.BuiltInTurrets;
+        for (int i = 0; i < builtInTurrets.Length; i++)
+        {
+            builtInTurrets[i].AttachToWeaponManager(aircraft);
+        }
+        Weapon[] builtInWeapons = __instance.BuiltInWeapons;
+        for (int i = 0; i < builtInWeapons.Length; i++)
+        {
+            Gun gun = (Gun)builtInWeapons[i];
+            gun.LoadAmmunition(weaponMount);
+            aircraft.weaponManager.RegisterWeapon(gun, weaponMount, __instance);
+        }
+        __instance.mount = weaponMount;
+        __instance.ModifyMass(__instance.mount.emptyMass);
+        __instance.ModifyDrag(__instance.mount.emptyDrag);
+        __instance.ModifyRCS(__instance.mount.emptyRCS);
+        __instance.spawnedPrefab = Object.Instantiate(weaponMount.prefab, __instance.transform);
+        if (__instance.spawnedPrefab.TryGetComponent<ColorableMount>(out var component))
+        {
+            component.AttachToAircraft(aircraft);
+        }
+        if (weaponMount.radar)
+        {
+            __instance.spawnedPrefab.GetComponentInChildren<Radar>().AttachToUnit(aircraft);
+            AeroPart component2 = __instance.spawnedPrefab.GetComponent<AeroPart>();
+            if (component2 != null && aircraft.LocalSim)
+            {
+                component2.CreateRB(aircraft.rb.GetPointVelocity(__instance.transform.position), __instance.transform.position);
+                component2.CreateJoints();
+            }
+        }
+        if (weaponMount.countermeasure)
+        {
+            __instance.spawnedPrefab.GetComponentInChildren<Countermeasure>().AttachToUnit(aircraft);
+        }
+        builtInWeapons = __instance.spawnedPrefab.GetComponentsInChildren<Weapon>();
+        foreach (Weapon weapon in builtInWeapons)
+        {
+            aircraft.weaponManager.RegisterWeapon(weapon, weaponMount, __instance);
+        }
+        if (weaponMount.turret)
+        {
+            __instance.spawnedPrefab.GetComponentInChildren<Turret>().AttachToWeaponManager(aircraft);
+        }
+        __result = __instance.spawnedPrefab;
+        return false;
+    }*/
+    
     [HarmonyPatch(nameof(Hardpoint.SpawnMount))]
     [HarmonyPostfix]
     private static void SpawnMount_Postfix(Aircraft aircraft, WeaponMount weaponMount, GameObject __result)
@@ -439,32 +468,7 @@ public static class RadialMenuActionPatches
 [HarmonyPatch(typeof(Encyclopedia))]
 public static class EncyclopediaPatches
 {
-    /*private static bool triggered = false;
-    [HarmonyPatch(nameof(Encyclopedia.AfterLoad), new Type[0])]
-    [HarmonyPostfix]
-    private static void AfterLoad_Postfix()
-    {
-        if (triggered) return;
-        
-        if (ModAssets.i == null || ModAssets.i.aircraftDefs == null || ModAssets.i.aircraftEntries == null) return;
 
-        for (int i = 0; i < ModAssets.i.aircraftDefs.Count; i++) 
-        {
-            var def = ModAssets.i.aircraftDefs[i];
-            
-            if (def == null || def.unitPrefab == null) continue;
-            
-            if (i >= ModAssets.i.aircraftEntries.Count || ModAssets.i.aircraftEntries[i] == null) continue;
-            
-            def.unitPrefab.AddComponent<RailHangarController>();
-        
-            var go = new GameObject("RailAttachPoint");
-            go.transform.SetParent(def.unitPrefab.transform);
-            go.transform.localPosition = ModAssets.i.aircraftEntries[i].railAttachPoint;
-        }
-
-        triggered = true;
-    }*/
 }
 
 [HarmonyPatch(typeof(FactionHQ))]
@@ -846,6 +850,26 @@ public class BulletPatches
                 DamageEffects.BlastFrag(info.blastDamage, __instance.position.ToLocalPosition(), owner.persistentID, PersistentID.None);
             }
         }
+    }
+}
+
+[HarmonyPatch(typeof(EncyclopediaBrowser))]
+public class EncyclopediaBrowserPatches
+{
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(EncyclopediaBrowser.SpawnAircraft))]
+    private static void SpawnAircraft_Prefix(EncyclopediaBrowser __instance, UnitDefinition definition)
+    {
+        if (ModAssets.i.shipDefinitions.Contains(definition))
+        {
+            __instance.spawnTransform = __instance.spawnTransforms[2];
+            __instance.waterMaterial.SetVector("_OriginOffset" ,Vector2.zero);
+        }
+        else
+        {
+            __instance.spawnTransform = __instance.spawnTransforms[0];
+        }
+        
     }
 }
 

@@ -54,7 +54,7 @@ public class AircraftPatches
 		return false;
 	}
 
-	[HarmonyPatch(nameof(Aircraft.CanRearm))]
+	/*[HarmonyPatch(nameof(Aircraft.CanRearm))]
 	[HarmonyPrefix]
 	static bool CanRearm_Prefix(Aircraft __instance, bool aircraftRearm, bool vehicleRearm, bool shipRearm, ref bool __result)
 	{
@@ -64,7 +64,7 @@ public class AircraftPatches
 		if (!shipRearm) __result = false;
 		
 		return false;
-	}
+	}*/
 
 	/*[HarmonyPatch(nameof(Aircraft.Rearm))]
 	[HarmonyPrefix]

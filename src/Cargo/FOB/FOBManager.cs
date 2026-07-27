@@ -66,11 +66,11 @@ public class FOBManager : NetworkBehaviour
         {
             var unit = placedUnits[i];
             indices[i] = availableFOBUnits.IndexOf(unit.data);
-            positions[i] = unit.position.ToGlobalPosition().AsVector3();
+            positions[i] = unit.position;
             rotations[i] = unit.rotation;
         }
         
-        CmdFinalizeFOB(indices, positions, rotations, spawnAirbase, center.ToGlobalPosition().AsVector3());
+        CmdFinalizeFOB(indices, positions, rotations, spawnAirbase, center);
     }
 
     [ServerRpc]
@@ -87,8 +87,8 @@ public class FOBManager : NetworkBehaviour
         if (spawnAirbase)
         {
             GameObject go = Instantiate(GameAssets.i.airbasePrefab, Datum.origin);
-            string uname = $"FOB_{aircraft.Player.PlayerName}_{Time.time}";
-            var displayName = $"FOB: {aircraft.Player.PlayerName}";
+            string uname = $"FOB_{aircraft.Player.GetNameOrCensored()}_{Time.time}";
+            var displayName = $"FOB: {aircraft.Player.GetNameOrCensored()}";
             go.name = uname; // create unique name
             var filter = go.AddComponent<AirbaseAIFilter>();
             filter.AddAllowedKey("UtilityHelo1");

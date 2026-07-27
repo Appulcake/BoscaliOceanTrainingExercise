@@ -35,6 +35,8 @@ public class NetworkMissileLauncher : Weapon
 
     private int magazineCapacity;
     private int ReserveMagazineCount => Mathf.Max(0, magazineCount);
+    
+    public float FireInterval => fireInterval;
 
     private void OnEnable()
     {
@@ -295,7 +297,7 @@ public class NetworkMissileLauncher : Weapon
         weaponStation?.Updated();
     }
 
-    public override void Rearm()
+    public override void Rearm(int ammoToRearm, WeaponStation weaponStation)
     {
         if (!Rearmable)
         {

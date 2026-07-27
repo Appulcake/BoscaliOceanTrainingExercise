@@ -30,21 +30,26 @@ public class ResupplyController : NetworkBehaviour
 		player = aircraft.Player;
 		if (player == null) return;
 		if (!GameManager.IsLocalAircraft(aircraft)) return;
-
-		if (resupplyCalled) return;
-		if (GameManager.playerInput.GetButtonDown("Call Resupply"))
+		
+		if (GameManager.playerInput.GetButtonDown($"{Mod_Input.ModShortName}:Call Resupply") && !resupplyCalled)
 		{
-			CmdRequestResupply(false);
-		} else if (GameManager.playerInput.GetButtonDown("Call Resupply - Player") && GameManager.gameState == GameState.SinglePlayer)
+			RequestResupply(false);
+		} else if (GameManager.playerInput.GetButtonDown($"{Mod_Input.ModShortName}:Call Resupply - Player") && GameManager.gameState == GameState.SinglePlayer)
 		{
-			CmdRequestResupply(true);
+			RequestResupply(true);
 		}
+	}
+
+	public void RequestResupply(bool player)
+	{
+		CmdRequestResupply(player);
 	}
 	
 	[ServerRpc]
 	private void CmdRequestResupply(bool player)
 	{
-		if (resupplyCalled) return;
+		if (resupplyCalled && !player) return;
+		if (player && GameManager.gameState != GameState.SinglePlayer) return;
 		StartCoroutine(ResupplyCoroutine(player));
 		if (!player)
 		{

@@ -119,27 +119,36 @@ public class DeploymentManager : NetworkBehaviour
         selectedIndex = 0;
     }
 
+    public void NextUnit() =>  CmdRequestSelectionChange(1, fobSelected);
+
+    public void PrevUnit() => CmdRequestSelectionChange(-1, fobSelected);
+
+    public void ToggleFOB()
+    {
+        if (!HasFOB) return;
+        CmdRequestSelectionChange(0, !fobSelected);
+    }
+
     private void Update()
     {
         if (!aircraft.LocalSim || (IsEmpty() && !HasFOB)) return;
 
         var player = aircraft.pilots[0]?.playerState?.player;
         if (player == null) return;
-        if (player.GetButtonDown("Select/Deselect FOB"))
+        if (player.GetButtonDown($"{Mod_Input.ModShortName}:Select/Deselect FOB"))
         {
-            if (!HasFOB) return;
-            CmdRequestSelectionChange(0, !fobSelected);
+           ToggleFOB();
+        }
+        if (player.GetButtonDown($"{Mod_Input.ModShortName}:Next Unit"))
+        {
+            NextUnit();
+        } 
+        else if (player.GetButtonDown($"{Mod_Input.ModShortName}:Previous Unit"))
+        {
+            PrevUnit();
         }
 
-        if (player.GetButtonDown("Next Unit"))
-        {
-            CmdRequestSelectionChange(1, fobSelected);
-        } else if (player.GetButtonDown("Previous Unit"))
-        {
-            CmdRequestSelectionChange(-1, fobSelected);
-        }
-
-        if (player.GetButton("Deploy Unit") && !Safety)
+        if (player.GetButton($"{Mod_Input.ModShortName}:Deploy Unit") && !Safety)
         {
             if (Time.timeSinceLevelLoad > lastDeployTime + 1f)
             {

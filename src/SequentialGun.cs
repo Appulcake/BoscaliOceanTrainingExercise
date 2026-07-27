@@ -43,10 +43,9 @@ public class SequentialGun : Gun
             }
         }
 
-        if (bulletsLoaded == 0 && !reloading && magazines > 0)
+        if (bulletsLoaded == 0 && timeUntilReload <= 0f && magazines > 0)
         {
             timeUntilReload = reloadTime;
-            reloading = true;
             ReportReloading(true);
             magazines--;
             if (reloadSound != null) reloadSound.Play();
@@ -82,7 +81,6 @@ public class SequentialGun : Gun
             if (timeUntilReload <= 0f)
             {
                 bulletsLoaded = magazineCapacity;
-                reloading = false;
                 ReportReloading(false);
                 weaponStation.Updated();
             }

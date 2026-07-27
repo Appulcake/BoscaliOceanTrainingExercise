@@ -32,9 +32,6 @@ public class ModAssets : ScriptableObject
 	public GameObject CargoEditorUI;
 	public GameObject CargoEditorRow;
 
-	[SerializeField] public List<AircraftDefinition> aircraftDefs;
-	[SerializeField] public List<RailHangarEntry> aircraftEntries;
-
 	[SerializeField] public AircraftDefinition[] shipDefinitions;
 	[SerializeField] public AircraftDefinition[] shipDefinitionsWithDeployer;
 
@@ -42,6 +39,8 @@ public class ModAssets : ScriptableObject
 
 	[SerializeField] public GameObject networkModSingletons;
 	[SerializeField] public GameObject modSingletons;
+
+	[SerializeField] public RadialMenuAction[] actionsToAdd;
 	
 
 	private void OnEnable()
