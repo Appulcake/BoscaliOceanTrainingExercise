@@ -25,10 +25,10 @@ public class BridgeCamManager : MonoBehaviour
 		if (stations.Length == 0) return;
 		
 		if (!GameManager.IsLocalAircraft(aircraft)) return;
-		if (GameManager.playerInput.GetButtonDown("Next Camera"))
+		if (GameManager.playerInput.GetButtonDown($"{Mod_Input.ModShortName}:Next Camera"))
 		{
 			CycleCam(1);
-		} else if (GameManager.playerInput.GetButtonDown("Previous Camera"))
+		} else if (GameManager.playerInput.GetButtonDown($"{Mod_Input.ModShortName}:Previous Camera"))
 		{
 			CycleCam(-1);
 		}
