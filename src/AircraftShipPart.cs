@@ -10,6 +10,10 @@ public class AircraftShipPart : ShipPart
 	
 	[SerializeField]
 	private PartJoint[] joints;
+
+	[SerializeField] private bool unparent = false;
+	[SerializeField] private Joint[] physicsJoints;
+	[SerializeField] private UnitPart physicsAttachedPart;
 	
 	private ShipPartBridge bridge;
 	private bool simplePhysics;
@@ -43,6 +47,11 @@ public class AircraftShipPart : ShipPart
         if (transform.parent == null)
         {
             parentUnit.rb.mass = CalcMassWithChildren();
+        }
+
+        if (attachInfo == null && physicsAttachedPart != null)
+        {
+	        CreateAttachInfo(physicsAttachedPart);
         }
 	}
 
@@ -129,14 +138,21 @@ public class AircraftShipPart : ShipPart
 				Debug.LogError($"Couldn't find rb for part {base.gameObject}, attachInfo.parentPart = {attachInfo.parentPart}");
 			}
 			rb.mass = mass;
+			if (unparent)
+			{
+				base.xform.SetParent(null, worldPositionStays: true);
+			}
 			return;
 		}
 		if (joints.Length != 0 && joints[0].connectedPart == null)
 		{
 			joints[0].connectedPart = attachInfo.parentPart;
 		}
-		base.xform.SetParent(null, worldPositionStays: true);
-		rb = base.gameObject.AddComponent<Rigidbody>();
+
+		if (!base.gameObject.TryGetComponent<Rigidbody>(out rb))
+		{
+			rb = base.gameObject.AddComponent<Rigidbody>();
+		}
 		rb.mass = mass;
 		rb.drag = 0f;
 		rb.angularDrag = 0f;
@@ -154,6 +170,21 @@ public class AircraftShipPart : ShipPart
 
 	public void CreateJoints()
 	{
+		if (physicsAttachedPart != null && physicsAttachedPart.rb != null)
+		{
+			foreach (var joint in physicsJoints)
+			{
+				joint.connectedBody = physicsAttachedPart.rb;
+			}
+		} 
+		else if (attachInfo != null)
+		{
+			foreach (var joint in physicsJoints)
+			{
+				joint.connectedBody = attachInfo.parentPart.rb;
+			}
+		}
+		
 		for (int i = 0; i < joints.Length; i++)
 		{
 			PartJoint partJoint = joints[i];
