@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using NOComponentWIP.Patches;
+using NuclearOption.UIStyleSystem;
+using TMPro;
 
 namespace NOComponentWIP;
 
@@ -10,20 +13,24 @@ public class ShipHUD : HUDApp
 {
     [Header("UI References")]
     [SerializeField] private RectTransform contentParent;
-    [SerializeField] private Text itemTemplate; 
+    [SerializeField] private TextMeshProUGUI itemTemplate; 
     [SerializeField] private float itemHeight = 31f;
-    [SerializeField] private Text fobStatus;
+    [SerializeField] private TextMeshProUGUI fobStatus;
     [SerializeField] private GameObject deploymentHud;
-    [SerializeField] private Text resupplyText;
-    [SerializeField] private Text disembarkText;
+    [SerializeField] private TextMeshProUGUI resupplyText;
+    [SerializeField] private TextMeshProUGUI disembarkText;
     
     private Aircraft aircraft;
     private DeploymentManager manager;
     private ShipPartBridge bridge;
     private FOBManager fobManager;
     private ResupplyController resupplyController;
-    private List<Text> pool = new List<Text>();
+    private List<TextMeshProUGUI> pool = new List<TextMeshProUGUI>();
     private float lastDisembarkRefresh;
+
+    private Color alertColor = Color.red;
+    private Color selectedColor = Color.green;
+    private Color idleColor = Color.cyan;
 
     public override void Initialize(Aircraft aircraft)
     {
@@ -43,7 +50,20 @@ public class ShipHUD : HUDApp
         itemTemplate.gameObject.SetActive(false);
         
         lastDisembarkRefresh = 0f;
-}
+        ThemeManager.ThemeGroupChanged += ShipHUD_OnThemeGroupChanged;
+    }
+
+    private void ShipHUD_OnThemeGroupChanged()
+    {
+        alertColor = ThemeManager.Active.ColorTheme.Alert;
+        selectedColor = ThemeManager.Active.ColorTheme.AllClear;
+        idleColor = ThemeManager.Active.ColorTheme.Warning;
+    }
+
+    private void OnDestroy()
+    {
+        ThemeManager.ThemeGroupChanged -= ShipHUD_OnThemeGroupChanged;
+    }
 
     public override void Refresh()
     {
@@ -58,12 +78,12 @@ public class ShipHUD : HUDApp
             if (fobManager.hasFob)
             {
                 fobStatus.text = "FOB: READY";
-                fobStatus.color = (manager != null && manager.FobSelected) ? Color.green : Color.cyan;
+                fobStatus.color = (manager != null && manager.FobSelected) ? selectedColor : idleColor;
             }
             else
             {
                 fobStatus.text = "FOB: EMPTY";
-                fobStatus.color = Color.red;
+                fobStatus.color = alertColor;
             }
         }
         
@@ -100,7 +120,7 @@ public class ShipHUD : HUDApp
         {
             UpdatePool(1); 
             pool[0].text = "EMPTY";
-            pool[0].color = !manager.FobSelected ? Color.red : new Color(1, 1, 1, 0.4f);
+            pool[0].color = !manager.FobSelected ? alertColor : new Color(1, 1, 1, 0.4f);
         
             contentParent.anchoredPosition = Vector2.zero;
             return;
@@ -121,7 +141,7 @@ public class ShipHUD : HUDApp
         
             if (typeID == currentSelectedID && !manager.FobSelected)
             {
-                pool[i].color = Color.green;
+                pool[i].color = selectedColor;
                 visualSelectedIndex = i;
             }
             else
@@ -153,16 +173,16 @@ public class ShipHUD : HUDApp
             if (range && speed)
             {
                 disembarkText.text = "DISEMBARK: SAFE";
-                disembarkText.color = Color.green;
+                disembarkText.color = selectedColor;
             } else if (range)
             {
                 disembarkText.text = "DISEMBARK: SPEED";
-                disembarkText.color = Color.yellow;
+                disembarkText.color = idleColor;
             }
             else
             {
                 disembarkText.text = "DISEMBARK: RANGE";
-                disembarkText.color = Color.red;
+                disembarkText.color = alertColor;
             }
         }
     }
@@ -183,7 +203,7 @@ public class ShipHUD : HUDApp
     {
         while (pool.Count < requiredCount)
         {
-            Text newItem = Instantiate(itemTemplate, contentParent);
+            TextMeshProUGUI newItem = Instantiate(itemTemplate, contentParent);
             newItem.gameObject.SetActive(true);
             pool.Add(newItem);
         }
