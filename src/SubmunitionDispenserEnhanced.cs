@@ -19,18 +19,33 @@ public class SubmunitionDispenserEnhanced : SubmunitionDispenser
 	[SerializeField] private bool targetBuilding;
 
 	[SerializeField] private float maxSpeed = 2000f;
+	[SerializeField] private float minAlignAngle = -1f;
 	
 	private new void TargetApproachCheck()
 	{
 		if (!dispensed && !(missile.NetworkHQ == null))
 		{
 			_ = missile.targetID;
-			if (missile.targetID.TryGetUnit(out var unit) && missile.NetworkHQ.IsTargetPositionAccurate(unit, detectionRange) && FastMath.InRange(unit.GlobalPosition(), missile.GlobalPosition(), dispenseDistance) && unit.LineOfSight(missile.transform.position, 1000f))
+			if (ApproachCheck())
 			{
 				missile.NetworkHQ.RpcUpdateTrackingInfo(missile.targetID);
 				missile.Damage(dmgID, new DamageInfo(0f, 0f, 0f, 1f));
 			}
 		}
+	}
+
+	private bool ApproachCheck()
+	{
+		if (missile.targetID.TryGetUnit(out var unit) && 
+		    missile.NetworkHQ.IsTargetPositionAccurate(unit, detectionRange) && 
+		    FastMath.InRange(unit.GlobalPosition(), missile.GlobalPosition(), dispenseDistance) && 
+		    unit.LineOfSight(missile.transform.position, 1000f) &&
+		    (minAlignAngle == -1f || Vector3.Angle(FastMath.Direction(transform.position, unit.transform.position), missile.transform.forward) <= minAlignAngle))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	private bool TargetCheck(Unit target)

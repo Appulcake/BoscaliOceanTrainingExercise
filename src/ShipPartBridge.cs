@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using NuclearOption.Jobs;
@@ -31,7 +32,7 @@ public class ShipPartBridge : MonoBehaviour
 	{
 		aircraft.onDisableUnit += UnitDisabled;
 		aircraft.onInitialize +=  OnInitialize;
-		if (handleGear) aircraft.onSetGear += HandleGearEvent;
+		if (handleGear) aircraft.onSetGear += HandleGearEvent; 
 	}
 
 	private void Update()
@@ -189,6 +190,5 @@ public class ShipPartBridge : MonoBehaviour
 			JobManager.Remove(ref part.JobPart);
 			ShipPart.DisposeJobFields(ref part.JobFields);
 		}
-		
 	}
 }

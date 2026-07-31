@@ -250,7 +250,7 @@ public class FOBUIController : MonoBehaviour
 		if (activeData.IsAirbaseCenter && !spawnAirbase)
 		{
 			spawnAirbase = true;
-			airbaseCenter = activeUnit.transform.position;
+			airbaseCenter = activeUnit.transform.position.ToGlobalPosition().AsVector3();
 			makeCenter = true;
 		}
 		
@@ -258,7 +258,7 @@ public class FOBUIController : MonoBehaviour
 		{
 			data = activeData,
 			instance = activeUnit,
-			position = activeUnit.transform.position,
+			position = activeUnit.transform.position.ToGlobalPosition().AsVector3(),
 			rotation = activeUnit.transform.rotation,
 			isCenter = makeCenter
 		};

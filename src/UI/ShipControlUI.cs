@@ -97,11 +97,11 @@ public class ShipControlUI : MonoBehaviour
 		
 		if (hit != null &&  player != null)
 		{
-			if (player.GetButtonDown("Control UI - Select")) {
+			if (player.GetButtonDown($"{Mod_Input.ModShortName}:Control UI - Select")) {
 				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerDownHandler);
 			}
             
-			if (player.GetButtonUp("Control UI - Select")) {
+			if (player.GetButtonUp($"{Mod_Input.ModShortName}:Control UI - Select")) {
 				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerUpHandler);
 				ExecuteEvents.Execute(hit, pd, ExecuteEvents.pointerClickHandler);
 			}

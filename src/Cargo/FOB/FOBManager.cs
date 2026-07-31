@@ -114,7 +114,7 @@ public class FOBManager : NetworkBehaviour
             if (dataIndex < 0 || dataIndex >= availableFOBUnits.Count) continue;
 
             var data = availableFOBUnits[dataIndex];
-            var gp = new GlobalPosition(positions[i].x, positions[i].y, positions[i].z);
+            var gp = new GlobalPosition(positions[i]);
             var spawnedObj = data.SpawnUnit(gp.ToLocalPosition(), rotations[i], Vector3.zero, aircraft, out var spawned);
             
             if (spawnedObj != null)
