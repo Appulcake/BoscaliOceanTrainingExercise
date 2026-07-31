@@ -96,12 +96,15 @@ public class ShipHUD : HUDApp
             if (resupplyController.ResupplyDistance > 0f)
             {
                 resupplyText.text = $"RESUPPLY: INBOUND - {UnitConverter.DistanceReading(resupplyController.ResupplyDistance)}";
+                resupplyText.color = selectedColor;
             } else if (resupplyController.ResupplyCalled)
             {
+                resupplyText.color = idleColor;
                 resupplyText.text = $"RESUPPLY: CALLED";
             }
             else
             {
+                resupplyText.color = selectedColor;
                 resupplyText.text = $"RESUPPLY: READY";
             }
         }

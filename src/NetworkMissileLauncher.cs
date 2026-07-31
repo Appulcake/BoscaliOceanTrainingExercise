@@ -213,7 +213,7 @@ public class NetworkMissileLauncher : Weapon
         }
         catch (System.Exception ex)
         {
-            Plugin.Logger.LogError($"FireWhenDoorsOpen failed: {ex}");
+            Plugin.Logger.LogError($"QueuedFire failed: {ex}");
         }
         finally
         {

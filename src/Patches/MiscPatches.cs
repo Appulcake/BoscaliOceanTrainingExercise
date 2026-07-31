@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using Mirage;
@@ -9,6 +10,7 @@ using NuclearOption.Jobs;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace NOComponentWIP.Patches;
@@ -251,17 +253,6 @@ public static class TurretPatches
         {
             __instance.RegisterTargetDetector(__instance.attachedUnit.radar);
         }
-    }
-
-    [HarmonyPatch(nameof(Turret.SetTarget), typeof(PersistentID), typeof(byte))]
-    [HarmonyPostfix]
-    private static void SetTarget_Postfix(Turret __instance, PersistentID id)
-    {
-        if (__instance.attachedUnit.disabled || !__instance.aimSafetyWeapon) return;
-        if (!UnitRegistry.TryGetUnit(id, out var target)) return;
-
-        __instance.aimSafetyWeapon.SetTarget(target);
-        __instance.aimSolver.SetTarget(__instance.attachedUnit, target, __instance.aimSafetyWeapon.transform, __instance.aimSafetyWeapon.info);
     }
 }
 
@@ -590,6 +581,16 @@ public static class RadarPatches
             __instance.rotators[i].transform.localEulerAngles -= __instance.rotators[i].axis * Time.deltaTime;
         }
     }
+    
+    [HarmonyPatch(nameof(Radar.AttachToUnit))]
+    [HarmonyPostfix]
+    private static void AttachToUnit_Postfix(Radar __instance, Unit unit)
+    {
+        if (__instance.guidedMissiles == null)
+        {
+            __instance.guidedMissiles = new List<Missile>();
+        }
+    }
 }
 
 [HarmonyPatch(typeof(AIHeloTakeoffState))]
@@ -872,6 +873,7 @@ public class EncyclopediaBrowserPatches
         
     }
 }
+
 
 public static class TransformExtensions
 {
