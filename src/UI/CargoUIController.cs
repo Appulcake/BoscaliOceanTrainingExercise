@@ -97,6 +97,14 @@ public class CargoUIController : MonoBehaviour
 
     private void NotifyRowsOfPointChange()
     {
+        if (_manager.MaxPoints - _currentTotalPoints < _manager.FobCost && !fobToggle.isOn)
+        {
+            fobToggle.interactable = false;
+        }
+        else
+        {
+            fobToggle.interactable = true;
+        }
         var rows = scrollContent.GetComponentsInChildren<UnitRowController>();
         foreach (var row in rows)
         {
