@@ -5,8 +5,6 @@
 
 ## improvements
 
-- guns are funky in mp perhaps, might not be a bote issue
-- phased array lasers
 
 ## additions
 
@@ -19,12 +17,9 @@
 
 ## todo list for me yipee
 
-- lfd balance
 - finish swap system
-- argus sam turrets?
 - helicopter speed matching
 - ships can technically still recover themselves
-- ui
-- ui
-- ui
-- ui
+- pb weapons
+- check log issues
+- spawning below water came back mitch AAAAAAAAAAAAAAAAAAAAAAAAAAA

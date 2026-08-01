@@ -137,12 +137,12 @@ public static class SpawnerPatches
         component.bravery = bravery;
         component.SetLiveryKey(livery);
         component.NetworkplayerRef = networkplayerRef;
-        component.NetworkunitName = player != null ? $"{player.GetNameOrCensored()} [{component.definition.unitName}]" : component.definition.unitName;
+        component.NetworkunitName = player != null ? $"{player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)} [{component.definition.unitName}]" : component.definition.unitName;
 
         if (component.TryGetComponent<Airbase>(out var airbase))
         {
             airbase.SetupAttachedAirbase(component);
-            airbase.SavedAirbase.UniqueName += $"{player?.GetNameOrCensored()}_{Time.time}";
+            airbase.SavedAirbase.UniqueName += $"{player?.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)}_{Time.time}";
         }
 
         if (player != null) __instance.ServerObjectManager.Spawn(gameObject, player.Owner);

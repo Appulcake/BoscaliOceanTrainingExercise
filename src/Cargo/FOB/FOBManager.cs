@@ -87,8 +87,8 @@ public class FOBManager : NetworkBehaviour
         if (spawnAirbase)
         {
             GameObject go = Instantiate(GameAssets.i.airbasePrefab, Datum.origin);
-            string uname = $"FOB_{aircraft.Player.GetNameOrCensored()}_{Time.time}";
-            var displayName = $"FOB: {aircraft.Player.GetNameOrCensored()}";
+            string uname = $"FOB_{aircraft.Player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)}_{Time.time}";
+            var displayName = $"FOB: {aircraft.Player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)}";
             go.name = uname; // create unique name
             var filter = go.AddComponent<AirbaseAIFilter>();
             filter.AddAllowedKey("UtilityHelo1");
