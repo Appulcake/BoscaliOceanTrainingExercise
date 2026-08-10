@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,49 +17,66 @@ public class UnitRowController : MonoBehaviour
 	[SerializeField] private Button plusButton;
 	[SerializeField] private Button minusButton;
 
-	private int _unitId;
-	private int _currentCount;
-	private int _unitCost;
-	private CargoUIController _mainController;
+	private DeployableUnit unit;
+	private int currentCount;
+	private int unitCost;
+	private CargoUIController uiController;
 
-	public void Setup(int id, DeployableUnit unit, int initialCount, CargoUIController main)
+	public void Setup(DeployableUnit unit, int initialCount, CargoUIController uiController)
 	{
-		_unitId = id;
-		_mainController = main;
-		_currentCount = initialCount;
-		_unitCost = unit.pointCost;
+		if (unit == null || uiController == null) return;
+		
+		this.unit = unit; 
+		this.uiController = uiController;
+		currentCount = initialCount;
+		unitCost = unit.pointCost;
         
 		unitNameText.text = unit.unitName;
-		unitCostText.text = $"[{_unitCost}]";
+		unitCostText.text = $"[{unitCost}]";
 		if (unitIcon != null) unitIcon.sprite = unit.icon;
 
+		if (plusButton != null)
+		{
+			plusButton.onClick.RemoveAllListeners();
+			plusButton.onClick.AddListener(() => OnButtonClick(1));
+		}
+
+		if (minusButton != null)
+		{
+			minusButton.onClick.RemoveAllListeners();
+			minusButton.onClick.AddListener(() => OnButtonClick(-1));
+		}
+		
 		UpdateLocalDisplay();
-        
-		plusButton.onClick.AddListener(() => OnButtonClick(1));
-		minusButton.onClick.AddListener(() => OnButtonClick(-1));
 	}
 
 	private void OnButtonClick(int delta)
 	{
-		_mainController.ChangeUnitCount(_unitId, delta, _unitCost);
+		uiController.ChangeUnitCount(unit, delta, unitCost, out int deltaActual);
         
-		_currentCount = Mathf.Max(0, _currentCount + delta); 
+		currentCount = Mathf.Max(0, currentCount + deltaActual); 
         
 		UpdateLocalDisplay();
 	}
 
 	public void UpdateLocalDisplay()
 	{
-		countText.text = _currentCount.ToString("D2"); 
+		countText.text = currentCount.ToString("D2"); 
         
-		minusButton.interactable = _currentCount > 0;
+		minusButton.interactable = currentCount > 0;
 	}
 	
 	public void UpdateAbilityToIncrement(int totalPoints, int maxPoints)
 	{
-		bool canAfford = (totalPoints + _unitCost) <= maxPoints;
+		bool canAfford = (totalPoints + unitCost) <= maxPoints;
 		plusButton.interactable = canAfford;
         
 		plusButton.GetComponentInChildren<TextMeshProUGUI>().color = canAfford ? Color.white : new Color(1,1,1,0.2f);
+	}
+
+	private void OnDestroy()
+	{
+		plusButton?.onClick.RemoveAllListeners();
+		minusButton?.onClick.RemoveAllListeners();
 	}
 }

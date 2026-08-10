@@ -44,13 +44,13 @@ namespace NOComponentWIP
 
         private void OnDestroy()
         {
-            if (aircraft != null) aircraft.onSetGear -= HandleGearEvent;
+            aircraft?.onSetGear -= HandleGearEvent;
+            aircraft?.onInitialize -= CargoDoor_OnInitialize;
         }
 
         private void HandleGearEvent(Aircraft.OnSetGear e)
         {
             targetState = e.gearState;
-            
 
             if (targetState == LandingGear.GearState.LockedRetracted)
             {
@@ -152,8 +152,8 @@ namespace NOComponentWIP
             {
                 foreach (var thisCollider in ignoreColliders)
                 {
+                    if (collider == null || thisCollider == null) continue;
                     Physics.IgnoreCollision(collider, thisCollider);
-                    Debug.Log($"{thisCollider.gameObject.name} disabling collide with {thisCollider.gameObject.name}");
                 }
             }
         }
@@ -211,5 +211,7 @@ namespace NOComponentWIP
                 audioSource.Play();
             }
         }
+        
+        
     }
 }

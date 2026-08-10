@@ -80,7 +80,7 @@ public class AircraftShipPart : ShipPart
 		    rb.angularVelocity = attachInfo.parentPart.rb.angularVelocity;
 		    rb.maxLinearVelocity = 60f;
 	    }
-	    /*if (breakJointStrength > 0f)
+	    /*if (breakJointStrength > 0f) // might revisit later
 	    {
 	        ConfigurableJoint configurableJoint = base.gameObject.AddComponent<ConfigurableJoint>();
 	        configurableJoint.connectedBody = connectedBody;
@@ -137,7 +137,7 @@ public class AircraftShipPart : ShipPart
 			{
 				Debug.LogError($"Couldn't find rb for part {base.gameObject}, attachInfo.parentPart = {attachInfo.parentPart}");
 			}
-			rb.mass = mass;
+			rb?.mass = mass;
 			if (unparent)
 			{
 				base.xform.SetParent(null, worldPositionStays: true);
@@ -227,5 +227,47 @@ public class AircraftShipPart : ShipPart
 		}
 		rb = parentUnit.rb;
 		simplePhysics = true;
+	}
+
+	internal new void Leak()
+	{
+		if (bridge == null) return;
+        
+		if (transform.position.y - height < Datum.SeaLevel.y) 
+		{
+			displacement -= leakRate * Time.deltaTime;
+		}
+        
+		if (compartmentalized || !(displacement < originalDisplacement * bridge.damageControlDeploymentThreshold))
+		{
+			return;
+		}
+
+		bridge.damageControlAvailable -= originalDisplacement;
+		compartmentalized = true;
+        
+		if (bridge.damageControlAvailable <= 0f)
+		{
+			foreach (var part in connectedCompartments)
+			{
+				part.Flood();
+			}
+		}
+	}
+
+	internal new void DamageControl()
+	{
+		if (bridge == null) return;
+        
+		if (!compartmentalized && !detachedFromUnit && !parentUnit.disabled && !submerged && !(bridge.damageControlAvailable <= 0f))
+		{
+			float rate = 0.02f * leakRateMin;
+			leakRate -= rate;
+			leakRate = Mathf.Max(leakRate, 0f);
+			float rate2 = 0.001f * originalDisplacement;
+			displacement += rate2;
+			displacement = Mathf.Min(displacement, originalDisplacement);
+			bridge.damageControlAvailable -= 10f * rate + rate2;
+		}
 	}
 }

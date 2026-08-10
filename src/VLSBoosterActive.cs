@@ -4,7 +4,7 @@ namespace NOComponentWIP;
 
 public class VLSBoosterActive : VLSBooster
 {
-	private void Awake()
+	private new void Awake()
 	{
 		missile.onInitialize += VLSBoosterActive_OnInitialize;
 		burnRate = fuelMass / burnTime;

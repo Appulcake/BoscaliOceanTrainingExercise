@@ -9,7 +9,7 @@ public class PitchGauge : CustomAxis1Gauge
 	{
 		var axis = (inputs.pitch + 1f) / 2;
 		
-		if (!(aircraft == null) && axisPrev != axis)
+		if (!(aircraft == null) && !Mathf.Approximately(axisPrev, axis))
 		{
 			axisPrev = axis;
 			float num = axisSplitPosition + idleZone;

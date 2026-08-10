@@ -1,10 +1,25 @@
 using System;
+using System.Collections.Generic;
 using Mirage;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
 namespace NOComponentWIP;
+
+public class DeployableUnitComparer : IComparer<DeployableUnit>
+{
+	public static readonly DeployableUnitComparer Instance = new ();
+
+	public int Compare(DeployableUnit x, DeployableUnit y)
+	{
+		if (ReferenceEquals(x, y)) return 0;
+		if (x is null) return -1;
+		if (y is null) return 1;
+		
+		return string.CompareOrdinal(x.JsonKey, y.JsonKey);
+	}
+}
 
 public abstract class DeployableUnit : ScriptableObject
 {
@@ -14,6 +29,7 @@ public abstract class DeployableUnit : ScriptableObject
 	public string description;
 	public bool eventContent;
 	public virtual UnitDefinition UnitDefinition { get; } = null;
+	public string JsonKey => UnitDefinition?.jsonKey ?? string.Empty;
 
 	public abstract Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft, out bool spawned);
 }
@@ -36,14 +52,9 @@ public class DeployableVehicle : DeployableUnit
 		var spawnedVehicle = NetworkSceneSingleton<Spawner>.i.SpawnVehicle(unitDefinition.unitPrefab, finalSpawnPos.ToGlobalPosition(), 
 			rotation, spawnVel, aircraft.NetworkHQ, null, 1f, false, aircraft.Player);
 
-		if (spawnedVehicle != null)
-		{
-			spawned = true;
-		}
-		else
-		{
-			return null;
-		}
+		if (spawnedVehicle == null) return null;
+
+		spawned = true;
 		
 		spawnedVehicle.MoveFromDepot();
 		if (spawnedVehicle.parachuteSystem == null) return spawnedVehicle;
@@ -63,7 +74,7 @@ public class DeployableAircraft : DeployableUnit
 	{
 		spawned = false;
 		var airbase = aircraft.GetComponent<Airbase>();
-		if (airbase == null && !airbase.CanSpawnAircraft(unitDefinition)) return null;
+		if (airbase == null || !airbase.CanSpawnAircraft(unitDefinition)) return null;
 
 		Loadout loadout = null;
 		float fuelLevel = unitDefinition.aircraftParameters.DefaultFuelLevel;
@@ -109,7 +120,7 @@ public class DeployableMissile : DeployableUnit
 	}
 }
 
-public class FOBUnit : DeployableUnit
+public abstract class FOBUnit : DeployableUnit
 {
 	public bool IsAirbaseCenter;
 	public GameObject unitGhost;
@@ -129,7 +140,7 @@ public class FOBBuilding : FOBUnit
 	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
-		spawned = true;
+		spawned = false;
 		var spawnedBuilding = NetworkSceneSingleton<Spawner>.i.SpawnBuilding(unitDefinition.unitPrefab, position.ToGlobalPosition(), rotation, aircraft.NetworkHQ, null, null, false, null);
 		if (spawnedBuilding != null) spawned = true;
 		return spawnedBuilding;

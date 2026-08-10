@@ -22,10 +22,12 @@ public static class WeaponStationPatches
     [HarmonyPostfix]
     static void LaunchMount_Postfix(WeaponStation __instance, ref int ___weaponIndex)
     {
+        if (__instance.Weapons.Count == 0) return;
+        
         if (___weaponIndex >= __instance.Weapons.Count)
         {
             var lastWeapon = __instance.Weapons[__instance.Weapons.Count - 1];
-            if (lastWeapon is MissileLauncher or Deployer or NetworkMissileLauncher)
+            if (lastWeapon is NetworkMissileLauncher)
             {
                 ___weaponIndex = 0;
             }
@@ -59,7 +61,6 @@ public static class WeaponStationPatches
         {
             return nml.GetAmmoTotal() <= 0 || nml.GetAmmoLoaded() <= 0 || nml.Reloading;
         }
-        if (weapon is Deployer d) return d.GetAmmoTotal() <= 0;
         return false;
     }
 }
@@ -295,66 +296,6 @@ public class AeroPartPatches
 [HarmonyPatch(typeof(Hardpoint))]
 public class HardpointPatches
 {
-    /*[HarmonyPatch(nameof(Hardpoint.SpawnMount))]
-    [HarmonyPrefix]
-    private static bool SpawnMount_Prefix(Hardpoint __instance, Aircraft aircraft, WeaponMount weaponMount, ref GameObject __result)
-    {
-        if (__instance.transform == null || __instance.part.IsDetached())
-        {
-            __result = null;
-        }
-        if (__instance.spawnedPrefab != null)
-        {
-            Debug.LogError("attempting to spawn " + weaponMount.mountName + " on pylon which is already occupied!");
-        }
-        Turret[] builtInTurrets = __instance.BuiltInTurrets;
-        for (int i = 0; i < builtInTurrets.Length; i++)
-        {
-            builtInTurrets[i].AttachToWeaponManager(aircraft);
-        }
-        Weapon[] builtInWeapons = __instance.BuiltInWeapons;
-        for (int i = 0; i < builtInWeapons.Length; i++)
-        {
-            Gun gun = (Gun)builtInWeapons[i];
-            gun.LoadAmmunition(weaponMount);
-            aircraft.weaponManager.RegisterWeapon(gun, weaponMount, __instance);
-        }
-        __instance.mount = weaponMount;
-        __instance.ModifyMass(__instance.mount.emptyMass);
-        __instance.ModifyDrag(__instance.mount.emptyDrag);
-        __instance.ModifyRCS(__instance.mount.emptyRCS);
-        __instance.spawnedPrefab = Object.Instantiate(weaponMount.prefab, __instance.transform);
-        if (__instance.spawnedPrefab.TryGetComponent<ColorableMount>(out var component))
-        {
-            component.AttachToAircraft(aircraft);
-        }
-        if (weaponMount.radar)
-        {
-            __instance.spawnedPrefab.GetComponentInChildren<Radar>().AttachToUnit(aircraft);
-            AeroPart component2 = __instance.spawnedPrefab.GetComponent<AeroPart>();
-            if (component2 != null && aircraft.LocalSim)
-            {
-                component2.CreateRB(aircraft.rb.GetPointVelocity(__instance.transform.position), __instance.transform.position);
-                component2.CreateJoints();
-            }
-        }
-        if (weaponMount.countermeasure)
-        {
-            __instance.spawnedPrefab.GetComponentInChildren<Countermeasure>().AttachToUnit(aircraft);
-        }
-        builtInWeapons = __instance.spawnedPrefab.GetComponentsInChildren<Weapon>();
-        foreach (Weapon weapon in builtInWeapons)
-        {
-            aircraft.weaponManager.RegisterWeapon(weapon, weaponMount, __instance);
-        }
-        if (weaponMount.turret)
-        {
-            __instance.spawnedPrefab.GetComponentInChildren<Turret>().AttachToWeaponManager(aircraft);
-        }
-        __result = __instance.spawnedPrefab;
-        return false;
-    }*/
-    
     [HarmonyPatch(nameof(Hardpoint.SpawnMount))]
     [HarmonyPostfix]
     private static void SpawnMount_Postfix(Aircraft aircraft, WeaponMount weaponMount, GameObject __result)

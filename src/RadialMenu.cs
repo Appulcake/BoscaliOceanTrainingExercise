@@ -190,7 +190,7 @@ public class BOTEUnitAction : CustomMenuAction
 				deployer.PrevUnit();
 				break;
 			case CustomActionType.FOB when deployer:
-				deployer.ToggleFOB();
+				deployer.CmdDeployFOB();
 				break;
 			case CustomActionType.Resupply when controller:
 				controller.RequestResupply(false);

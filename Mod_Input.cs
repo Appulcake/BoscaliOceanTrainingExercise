@@ -47,7 +47,7 @@ public class Mod_Input : BaseUnityPlugin
 		("Previous Unit", KeyboardKeyCode.None),
 		("Call Resupply", KeyboardKeyCode.None),
 		("Call Resupply - Player", KeyboardKeyCode.None),
-		("Select/Deselect FOB", KeyboardKeyCode.None),
+		("Deploy FOB", KeyboardKeyCode.None),
 		("Next Camera", KeyboardKeyCode.None),
 		("Previous Camera", KeyboardKeyCode.None),
 	];

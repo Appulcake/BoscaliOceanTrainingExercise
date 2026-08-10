@@ -21,11 +21,17 @@ public class FOBAssetRow : MonoBehaviour
 		costText.text = $"[{unit.pointCost}]";
 		if (icon != null) icon.sprite = unit.icon;
 
+		selectButton.onClick.RemoveAllListeners();
 		selectButton.onClick.AddListener(() => controller.SelectUnit(unit));
 	}
 
 	public void Disable(bool disabled)
 	{
 		selectButton.interactable = !disabled;
+	}
+
+	private void OnDestroy()
+	{
+		selectButton?.onClick.RemoveAllListeners();
 	}
 }

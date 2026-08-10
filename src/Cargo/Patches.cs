@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using HarmonyLib;
 using TMPro;
@@ -17,7 +18,7 @@ public static class AircraftSelectionMenuPatch
 	
 	private static Transform newButton;
 	
-	[HarmonyPatch("Initialize")]
+	[HarmonyPatch(nameof(AircraftSelectionMenu.Initialize))]
 	[HarmonyPrefix]
 	static void Prefix(AircraftSelectionMenu __instance)
 	{
@@ -26,32 +27,54 @@ public static class AircraftSelectionMenuPatch
 		var container = infoPanel.Find("Container");
 		if (container == null) return;
 		container.GetComponent<VerticalLayoutGroup>()?.spacing = 5f;
-		var vlg = infoPanel.gameObject.AddComponent<VerticalLayoutGroup>();
+		if (!infoPanel.TryGetComponent<VerticalLayoutGroup>(out var vlg))
+		{
+			vlg = infoPanel.gameObject.AddComponent<VerticalLayoutGroup>();
+		}
 		vlg.childControlWidth = true;
 		vlg.childControlHeight = true;
 		vlg.padding = new RectOffset(5, 5, 5, 5);
 		
-		var flyButton = infoPanel.Find("FlyButton");
+		var flyButton = infoPanel.Find("FlyButton")?.GetComponent<Button>();
 		if (flyButton == null) return;
-		flyButton.GetComponent<Button>().onClick.AddListener(() =>
+
+		flyButton.onClick.RemoveListener(OnFlyButtonClicked);
+		flyButton.onClick.AddListener(OnFlyButtonClicked);
+		
+		if (flyButton.TryGetComponent<LayoutElement>(out var layoutElement))
 		{
-			if (selected) LoadoutBridge.LoadoutSet = true;
-		});
-		flyButton.GetComponent<LayoutElement>()?.ignoreLayout = false;
-		newButton = Object.Instantiate(flyButton, infoPanel);
-		newButton.SetSiblingIndex(1);
-		var text = newButton.Find("Text (TMP)")?.GetComponent<TextMeshProUGUI>();
-		text?.text = "Cargo Options >";
-		newButton.GetComponent<Button>().onClick.SetPersistentListenerState(0, UnityEventCallState.Off);
-		newButton.GetComponent<Button>().onClick.AddListener(() => {
-			SpawnUI(__instance);
-		});
+			layoutElement.ignoreLayout = false;
+		}
+		
+		if (newButton == null)
+		{
+			newButton = Object.Instantiate(flyButton.transform, infoPanel);
+			newButton.SetSiblingIndex(1);
+
+			var text = newButton.Find("Text (TMP)")?.GetComponent<TextMeshProUGUI>();
+			if (text != null) text.text = "Cargo Options >";
+			if (text != null) text.enableWordWrapping = false;
+
+			var cargoBtn = newButton.GetComponent<Button>();
+			cargoBtn.onClick.RemoveAllListeners();
+			cargoBtn.onClick.SetPersistentListenerState(0,  UnityEventCallState.Off);
+			cargoBtn.onClick.AddListener(() => SpawnUI(__instance));
+		}
+
 		newButton.gameObject.SetActive(false);
+	}
+
+	private static void OnFlyButtonClicked()
+	{
+		if (selected && !LoadoutBridge.LoadoutSet)
+		{
+			LoadoutBridge.SetLoadout(new(), false);
+		}
 	}
 	
 	private static bool selected = false;
 
-	[HarmonyPatch("SpawnPreview")]
+	[HarmonyPatch(nameof(AircraftSelectionMenu.SpawnPreview))]
 	[HarmonyPostfix]
 	static void Postfix(AircraftSelectionMenu __instance)
 	{
@@ -74,7 +97,7 @@ public static class AircraftSelectionMenuPatch
 		Canvas rootCanvas = menu.GetComponentInParent<Canvas>();
 		if (rootCanvas == null)
 		{
-			Debug.LogError("[BOAT] Could not find a Canvas to spawn the UI on.");
+			Plugin.Logger.LogError("Could not find a Canvas to spawn the UI on.");
 			return;
 		}
 		
@@ -90,12 +113,12 @@ public static class AircraftSelectionMenuPatch
 		}
 		else
 		{
-			Debug.LogError("[BOAT] UI Spawned but ManifestUIController or DeploymentManager is missing!");
+			Plugin.Logger.LogError("UI Spawned but CargoUIController or DeploymentManager is missing!");
 		}
 	}
 }
 
-[HarmonyPatch(typeof(PilotPlayerState), "PlayerAxisControls")]
+[HarmonyPatch(typeof(PilotPlayerState), nameof(PilotPlayerState.PlayerAxisControls))]
 public static class ControlPatch
 {
 	[HarmonyPrefix]
@@ -112,12 +135,11 @@ public static class ControlPatch
 			pps.controlInputs.throttle = 0f;
 			return false;
 		}
-
 		return true;
 	}
 }
 
-[HarmonyPatch(typeof(Airbase), "CanSpawnAircraft")]
+[HarmonyPatch(typeof(Airbase), nameof(Airbase.CanSpawnAircraft))]
 public static class CanSpawnAircraftPatch
 {
 	[HarmonyPrefix]
@@ -125,18 +147,20 @@ public static class CanSpawnAircraftPatch
 	{
 		var filter = __instance.GetComponent<AirbaseAIFilter>();
 		if (filter == null) return true;
-
-		System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-
-		for (int i = 1; i < 5; i++)
+		
+		for (int i = 1; i <= 4; i++)
 		{
-			var method = stackTrace.GetFrame(i).GetMethod();
-			if (method.Name.Contains("FlyAircraftAsync")) return true;
+			var frame = new StackFrame(i, false);
+			var method = frame.GetMethod();
+			if (method != null && method.Name.Contains("FlyAircraftAsync"))
+			{
+				return true;
+			}
 		}
 
 		if (filter.CanSpawnAircraft(definition.jsonKey)) return true;
+
 		__result = false;
 		return false;
-
 	}
 }

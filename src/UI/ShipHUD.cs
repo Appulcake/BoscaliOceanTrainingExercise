@@ -36,6 +36,7 @@ public class ShipHUD : HUDApp
     {
         this.aircraft = aircraft;
         bridge = aircraft.GetComponent<ShipPartBridge>();
+        if (bridge == null) return;
         
         manager = bridge.deploymentManager;
         fobManager = bridge.fobManager;
@@ -50,7 +51,9 @@ public class ShipHUD : HUDApp
         itemTemplate.gameObject.SetActive(false);
         
         lastDisembarkRefresh = 0f;
+        
         ThemeManager.ThemeGroupChanged += ShipHUD_OnThemeGroupChanged;
+        ShipHUD_OnThemeGroupChanged();
     }
 
     private void ShipHUD_OnThemeGroupChanged()
@@ -78,7 +81,7 @@ public class ShipHUD : HUDApp
             if (fobManager.hasFob)
             {
                 fobStatus.text = "FOB: READY";
-                fobStatus.color = (manager != null && manager.FobSelected) ? selectedColor : idleColor;
+                fobStatus.color = selectedColor;
             }
             else
             {
@@ -99,13 +102,13 @@ public class ShipHUD : HUDApp
                 resupplyText.color = selectedColor;
             } else if (resupplyController.ResupplyCalled)
             {
-                resupplyText.color = idleColor;
                 resupplyText.text = $"RESUPPLY: CALLED";
+                resupplyText.color = idleColor;
             }
             else
             {
-                resupplyText.color = selectedColor;
                 resupplyText.text = $"RESUPPLY: READY";
+                resupplyText.color = selectedColor;
             }
         }
         
@@ -123,45 +126,52 @@ public class ShipHUD : HUDApp
         {
             UpdatePool(1); 
             pool[0].text = "EMPTY";
-            pool[0].color = !manager.FobSelected ? alertColor : new Color(1, 1, 1, 0.4f);
+            pool[0].color = alertColor;
         
             contentParent.anchoredPosition = Vector2.zero;
             return;
         }
         
-        var uniqueTypes = GetUniqueManifestTypes();
-        UpdatePool(uniqueTypes.Count);
+        
+        int unitCount = manager.UnitManifest.Count;
+        UpdatePool(unitCount);
 
+        int index = 0;
         int visualSelectedIndex = 0;
-        int currentSelectedID = manager.unitManifest[manager.SelectedIndex];
+        DeployableUnit selectedUnit = manager.GetSelectedUnit();
 
-        for (int i = 0; i < uniqueTypes.Count; i++)
+        foreach (var entry in manager.UnitManifest)
         {
-            int typeID = uniqueTypes[i];
-            int count = manager.unitManifest.Count(id => id == typeID);
-        
-            pool[i].text = $"{manager.availableUnits[typeID].unitName} x{count}";
-        
-            if (typeID == currentSelectedID && !manager.FobSelected)
+            if (index >= pool.Count) break;
+
+            DeployableUnit unit = entry.Key;
+            int count = entry.Value;
+
+            pool[index].text = $"{unit.unitName} x{count}";
+
+            if (unit == selectedUnit)
             {
-                pool[i].color = selectedColor;
-                visualSelectedIndex = i;
+                pool[index].color = selectedColor;
+                visualSelectedIndex = index;
             }
             else
             {
-                pool[i].color = new Color(1, 1, 1, 0.4f);
+                pool[index].color = new Color(1f, 1f, 1f, 0.4f);
             }
+
+            index++;
         }
-        
-        float totalHeight = uniqueTypes.Count * itemHeight;
-        float itemLocalY = (totalHeight / 2f) - (visualSelectedIndex * itemHeight) - (itemHeight / 2f);
-        float targetY = -itemLocalY;
 
-        Vector2 anchoredPos = contentParent.anchoredPosition;
-        anchoredPos.y = Mathf.Lerp(anchoredPos.y, targetY, Time.deltaTime * 10f);
-        contentParent.anchoredPosition = anchoredPos;
+        if (contentParent != null)
+        {
+            float totalHeight = unitCount * itemHeight;
+            float itemLocalY = (totalHeight / 2f) - (visualSelectedIndex * itemHeight) - (itemHeight / 2f);
+            float targetY = -itemLocalY;
 
-        
+            Vector2 anchoredPos = contentParent.anchoredPosition;
+            anchoredPos.y = Mathf.Lerp(anchoredPos.y, targetY, Time.deltaTime * 10f);
+            contentParent.anchoredPosition = anchoredPos;
+        }
     }
 
     private void DisembarkCheck()
@@ -190,31 +200,20 @@ public class ShipHUD : HUDApp
         }
     }
 
-    private List<int> GetUniqueManifestTypes()
-    {
-        if (manager == null) return new List<int>();
-
-        List<int> unique = new List<int>();
-        foreach (int id in manager.unitManifest)
-        {
-            if (!unique.Contains(id)) unique.Add(id);
-        }
-        return unique;
-    }
-
     private void UpdatePool(int requiredCount)
     {
         while (pool.Count < requiredCount)
         {
             TextMeshProUGUI newItem = Instantiate(itemTemplate, contentParent);
-            newItem.gameObject.SetActive(true);
             pool.Add(newItem);
         }
-        while (pool.Count > requiredCount)
+
+        for (int i = 0; i < pool.Count; i++)
         {
-            if (pool[pool.Count - 1] != null) 
-                Destroy(pool[pool.Count - 1].gameObject);
-            pool.RemoveAt(pool.Count - 1);
+            if (pool[i] != null)
+            {
+                pool[i].gameObject.SetActive(i < requiredCount);
+            }
         }
     }
 }

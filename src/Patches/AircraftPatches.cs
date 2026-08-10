@@ -101,10 +101,15 @@ public class AircraftPatches
 			if (aircraft.Player != null) return;
 			var deployManager = attachedUnit.GetComponent<DeploymentManager>();
 			if (deployManager == null) return;
-			var unitIndex = deployManager.ContainsUnit(aircraft.definition);
-			if (unitIndex == -1) return;
-			deployManager.CmdSetManifest(deployManager.UnitManifest.ToArray().AddItem(unitIndex).ToArray(), deployManager.HasFOB);
-			__state = true;
+
+			if (ModAssets.i.AllDeployableUnits.TryGetValue(aircraft.definition.jsonKey, out var unit))
+			{
+				if (deployManager.availableUnits.Contains(unit))
+				{
+					deployManager.AddUnit(unit);
+					__state = true;
+				}
+			}
 		}
 	}
 
@@ -121,7 +126,7 @@ public class AircraftPatches
 	static void FixedUpdate_Postfix(Aircraft __instance)
 	{
 		var ac = __instance;
-		if (ac.GetComponent<ShipPartBridge>() == null) return; 
+		if (ModAssets.i.shipDefinitions.Contains(__instance.definition)) return; 
 		if (ac.hit.collider != null && ac.hit.collider.attachedRigidbody != null)
 		{
 			var velocity = ac.cockpit.rb.velocity;
@@ -148,8 +153,9 @@ public class AircraftPatches
 	private static bool CheckRadarAlt_Prefix(Aircraft __instance)
 	{
 		if (!ModAssets.i.shipDefinitions.Contains(__instance.definition)) return true;
-
-		if (Physics.Linecast(__instance.transform.position, __instance.transform.position - Vector3.up * 10000f, out __instance.hit, 2112))
+		
+		if (Physics.Linecast(__instance.transform.position, __instance.transform.position - Vector3.up * 10000f, out __instance.hit,
+			    (int)PhysicsLayers.StaticsMask | (int)PhysicsLayers.ShipsMask))
 		{
 			__instance.radarAlt = __instance.hit.distance;
 		}
@@ -210,83 +216,4 @@ public class AircraftPatches
 			__instance.definition.spawnOffset = __state;
 		}
 	}
-	
-	[HarmonyPatch(nameof(Aircraft.LocalSimFixedUpdate))]
-    [HarmonyPrefix]
-    public static void LocalSimFixedUpdate_Prefix(Aircraft __instance)
-    {
-        try
-        {
-            if (__instance == null)
-            {
-                Debug.LogError("[AircraftDebug] __instance (Aircraft) is null!");
-                return;
-            }
-
-
-            try
-            {
-                var rb = __instance.CockpitRB();
-                if (rb == null)
-                {
-                    Debug.LogError("[AircraftDebug] CockpitRB() returned null.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[AircraftDebug] Exception thrown while calling CockpitRB(): {ex.Message}");
-            }
-            
-            if (__instance.partChecker == null)
-            {
-                Debug.LogError("[AircraftDebug] field 'partChecker' is null.");
-            }
-			
-            if (__instance.transform == null)
-            {
-                Debug.LogError("[AircraftDebug] 'base.transform' is null.");
-            }
-            
-            if (NetworkSceneSingleton<LevelInfo>.i == null)
-            {
-                Debug.LogError("[AircraftDebug] 'NetworkSceneSingleton<LevelInfo>.i' instance is null.");
-            }
-            if (__instance.controlSurfaces == null)
-            {
-                Debug.LogError("[AircraftDebug] 'controlSurfaces' list/array is null.");
-            }
-            else
-            {
-                int index = 0;
-                foreach (var surface in __instance.controlSurfaces)
-                {
-                    if (surface == null)
-                    {
-                        Debug.LogError($"[AircraftDebug] 'controlSurfaces' contains a null element at index {index}.");
-                    }
-                    index++;
-                }
-            }
-            
-            if (SceneSingleton<CombatHUD>.i != null)
-            {
-                try
-                {
-                    var hudAircraft = SceneSingleton<CombatHUD>.i.aircraft;
-                    if (hudAircraft == __instance && __instance.countermeasureManager == null)
-                    {
-                        Debug.LogError("[AircraftDebug] HUD matches this aircraft, but 'countermeasureManager' is null.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[AircraftDebug] Exception accessing CombatHUD data: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception criticalEx)
-        {
-            Debug.LogError($"[AircraftDebug] Critical failure inside prefix patch logic: {criticalEx}");
-        }
-    }
 }

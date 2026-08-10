@@ -111,14 +111,14 @@ public class NetworkMissileLauncher : Weapon
         GlobalPosition aimpoint)
     {
         await firingSemaphore.WaitAsync(destroyCancellationToken);
-        
+
         try
         {
             if ((bayDoors != null && bayDoors.Length > 0) || hardpoint?.bayDoors?.Length > 0)
             {
                 foreach (BayDoor bayDoor in bayDoors)
                     bayDoor?.OpenDoor(doorOpenDuration);
-                
+
                 hardpoint?.SpringOpenBayDoors();
 
                 await UniTask.WaitUntil(
@@ -133,7 +133,7 @@ public class NetworkMissileLauncher : Weapon
                 int delayMs = Mathf.RoundToInt((fireInterval - timeSinceLastFinish) * 1000f);
                 await UniTask.Delay(delayMs, cancellationToken: destroyCancellationToken);
             }
-            
+
             if (this == null
                 || owner == null
                 || weaponStation == null
@@ -152,10 +152,10 @@ public class NetworkMissileLauncher : Weapon
             {
                 return;
             }
-            
+
             foreach (BayDoor bayDoor in bayDoors)
                 bayDoor?.OpenDoor(doorOpenDuration);
-            
+
             TrackFiringVisibility().Forget();
             lastFired = Time.timeSinceLevelLoad;
 
@@ -185,7 +185,7 @@ public class NetworkMissileLauncher : Weapon
             }
 
             launchSound?.Play();
-            
+
             launchTransform.gameObject.SetActive(false);
             loadedMissiles--;
             ammo--;
@@ -194,6 +194,7 @@ public class NetworkMissileLauncher : Weapon
             {
                 currentTube = 0;
             }
+
             weaponStation.UpdateLastFired(0);
             weaponStation.AccountAmmo();
             weaponStation.Updated();
@@ -205,11 +206,15 @@ public class NetworkMissileLauncher : Weapon
             }
 
             lastLaunchFinishTime = Time.timeSinceLevelLoad;
-            
+
             if (loadedMissiles == 0 && reserveMissiles > 0)
             {
                 BeginReload().Forget();
             }
+        }
+        catch (OperationCanceledException cex)
+        {
+            
         }
         catch (System.Exception ex)
         {

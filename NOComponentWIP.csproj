@@ -90,4 +90,8 @@
     <Reference Include="$(GameManagedDir)\UnityEngine*.dll"></Reference>
     
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\Cargo\FOB\" />
+  </ItemGroup>
 </Project>

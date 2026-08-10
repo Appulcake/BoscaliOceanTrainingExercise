@@ -20,6 +20,7 @@ public class ModAssets : ScriptableObject
 				if (assets.Length > 0)
 				{
 					_instance = assets[0];
+					_instance.Initialize();
 				}
 			}
 			return _instance;
@@ -41,8 +42,18 @@ public class ModAssets : ScriptableObject
 	[SerializeField] public GameObject modSingletons;
 
 	[SerializeField] public RadialMenuAction[] actionsToAdd;
-	
+	[SerializeField] private List<DeployableUnit> allDeployableUnits;
 
+	public readonly Dictionary<string, DeployableUnit> AllDeployableUnits = new();
+
+	private void Initialize()
+	{
+		foreach (var unit in allDeployableUnits)
+		{
+			AllDeployableUnits.TryAdd(unit.JsonKey, unit);
+		}
+	}
+	
 	private void OnEnable()
 	{
 		hideFlags = HideFlags.DontUnloadUnusedAsset;

@@ -48,7 +48,6 @@ public class SmokeEjector : Countermeasure
 		
 		lastEjectionTime = Time.timeSinceLevelLoad;
 		aircraft.RequestRearm();
-		ammo--;
 		foreach (var ejectionPoint in ejectionPoints)
 		{
 			if (ammo > 0 && ejectionPoint.transform != null)
@@ -56,6 +55,7 @@ public class SmokeEjector : Countermeasure
 				EjectSmoke(aircraft, ejectionPoint).Forget();
 			}
 		}
+		ammo--;
 
 		if (GameManager.IsLocalAircraft(aircraft))
 		{

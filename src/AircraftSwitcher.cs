@@ -15,11 +15,11 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 	public void SwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
 		if (GameManager.gameState != GameState.SinglePlayer) return;
-		RpcSwitchAircraft(player, oldAircraft, newAircraft);
+		CmdSwitchAircraft(player, oldAircraft, newAircraft);
 	}
 	
 	[ServerRpc(requireAuthority = false)]
-	private void RpcSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
+	private void CmdSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
 		if (GameManager.gameState != GameState.SinglePlayer) return;
 		if (oldAircraft == null || newAircraft == null) return;
@@ -59,11 +59,11 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 		/*newAircraft.NetworkHQ = player.HQ; //funny mode*/
 		oldAircraft.pilots[0].aircraft = oldAircraft;
 		
-		CmdSwitchAircraft(player, oldAircraft, newAircraft);
+		RpcSwitchAircraft(player, oldAircraft, newAircraft);
 	}
 
 	[ClientRpc]
-	private void CmdSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
+	private void RpcSwitchAircraft(Player player, Aircraft oldAircraft, Aircraft newAircraft)
 	{
 		newAircraft?.SetLocalSim(newAircraft.CheckIfLocalSim());
 		if (newAircraft.LocalSim)

@@ -25,7 +25,6 @@ public class ShipPartBridge : MonoBehaviour
 	public DeploymentManager deploymentManager;
 	public FOBManager fobManager;
 	public ResupplyController resupplyController;
-	public ShipControlUI shipControlUI;
 	private bool musicStarted = false;
 	
 	public void Awake()
@@ -139,8 +138,6 @@ public class ShipPartBridge : MonoBehaviour
 		{
 			return;
 		}
-
-		shipControlUI?.Initialize(aircraft, this);
 		
 		this.StartSlowUpdateDelayed(1f, MusicCheck);
 	}

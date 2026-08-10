@@ -79,7 +79,6 @@ public class FOBUIController : MonoBehaviour
 
 		RefreshRows();
 		RefreshBudget();
-		StartCoroutine(BootScreen());
 		buildCamera = CameraStateManager.i.mainCamera;
 		CameraStateManager.i.SwitchState(CameraStateManager.i.freeState);
 	}
@@ -101,13 +100,6 @@ public class FOBUIController : MonoBehaviour
 			
 			row.Disable(max);
 		}
-	}
-
-	private IEnumerator BootScreen()
-	{
-		GameObject bs = Instantiate(bootScreenPrefab, transform.parent);
-		yield return new WaitForSeconds(1f);
-		Destroy(bs);
 	}
 
 	public void SelectUnit(FOBUnit unit)
@@ -258,7 +250,7 @@ public class FOBUIController : MonoBehaviour
 		{
 			data = activeData,
 			instance = activeUnit,
-			position = activeUnit.transform.position.ToGlobalPosition().AsVector3(),
+			globalPosition = activeUnit.transform.position.ToGlobalPosition().AsVector3(),
 			rotation = activeUnit.transform.rotation,
 			isCenter = makeCenter
 		};
@@ -341,7 +333,12 @@ public class FOBUIController : MonoBehaviour
 		CameraStateManager.i.SwitchState(CameraStateManager.i.cockpitState);
 		if (activeUnit != null) Destroy(activeUnit);
 		foreach (var unit in placedUnits) Destroy(unit.instance);
-		manager?.buildingFob = false;
+		manager?.Close();
+	}
+
+	private void OnDestroy()
+	{
+		Close();
 	}
 }
 
@@ -349,7 +346,7 @@ public class PlacedFOBUnit
 {
 	public FOBUnit data;
 	public GameObject instance;
-	public Vector3 position;
+	public Vector3 globalPosition;
 	public Quaternion rotation;
 	public bool isCenter;
 }

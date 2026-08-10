@@ -104,6 +104,7 @@ public class ResupplyController : NetworkBehaviour
 	private void ReturnToAircraft(Unit unit)
 	{
 		AircraftSwitcher.i.SwitchAircraft(this.player, resupplyAircraft, aircraft);
+		resupplyAircraft.onDisableUnit -= ReturnToAircraft;
 	}
 }
 

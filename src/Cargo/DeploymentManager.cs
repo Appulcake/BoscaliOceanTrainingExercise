@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Mirage;
 using Mirage.Collections;
 using Mirage.Serialization;
@@ -12,34 +13,38 @@ namespace NOComponentWIP;
 
 public class DeploymentManager : NetworkBehaviour
 {
-    public Transform spawnPoint;
-    public List<DeployableUnit> availableUnits;
+    [Header("References")]
+    [SerializeField] private Aircraft aircraft;
     [SerializeField] private FOBManager fobManager;
+    [SerializeField] private Transform spawnPoint;
+    
+    [Header("Configuration")]
     [SerializeField] private int maxPoints;
     [SerializeField] private int fobCost;
     [SerializeField] private float spawnVelocity;
     
-    public List<DeployableUnit> presetUnits;
+    public List<DeployableUnit> availableUnits;
 
-    public readonly SyncList<int> unitManifest = new SyncList<int>();
-    [SyncVar] private bool fobSelected;
+    public readonly SyncIDictionary<DeployableUnit, int> unitManifest = 
+        new(new SortedDictionary<DeployableUnit, int>(DeployableUnitComparer.Instance));
     [SyncVar] private int selectedIndex = 0;
     
-    
-    [SerializeField] private Aircraft aircraft;
-
     public bool Safety = false;
 
     public int MaxPoints => maxPoints;
     public int FobCost => fobCost;
     public bool FobAvailable => fobManager != null;
     public bool HasFOB => FobAvailable && fobManager.hasFob;
-    public bool FobSelected => fobSelected;
     public int SelectedIndex => selectedIndex;
-
-    public List<int> UnitManifest => new List<int>(unitManifest);
+    public IReadOnlyDictionary<DeployableUnit, int> UnitManifest => unitManifest;
 
     private float lastDeployTime;
+    private List<DeployableUnit> storedUnits;
+
+    private const string INPUT_FOB    = $"{Mod_Input.ModShortName}:Deploy FOB";
+    private const string INPUT_NEXT   = $"{Mod_Input.ModShortName}:Next Unit";
+    private const string INPUT_PREV   = $"{Mod_Input.ModShortName}:Previous Unit";
+    private const string INPUT_DEPLOY = $"{Mod_Input.ModShortName}:Deploy Unit";
 
     private void Awake()
     {
@@ -51,12 +56,10 @@ public class DeploymentManager : NetworkBehaviour
         if (!aircraft.LocalSim) return;
         if (aircraft.Player == null) return;
         if (!GameManager.IsLocalAircraft(aircraft)) return;
-        
-        /*Debug.Log($"[BOAT] Local Player Started. Initializing Manifest...");*/
 
         if (LoadoutBridge.LoadoutSet)
         {
-            CmdSetManifest(LoadoutBridge.SelectedUnitIDs.ToArray(), LoadoutBridge.FobMode);
+            CmdSetManifest(LoadoutBridge.Manifest, LoadoutBridge.IncludeFOB);
             LoadoutBridge.Clear();
         }
         else
@@ -70,18 +73,24 @@ public class DeploymentManager : NetworkBehaviour
         var canvas = GameplayUI.i.gameplayCanvas;
         if (canvas == null) yield break;
         
+        aircraft.onDisableUnit += Disable;
+        
         var uiInstance = Instantiate(ModAssets.i.CargoEditorUI, canvas.transform);
         var controller = uiInstance.GetComponent<CargoUIController>();
         controller.Initialize(this);
+        
         CursorManager.SetFlag(CursorFlags.Map, value: true);
         DynamicMap.AllowedToOpen = false;
         LoadoutBridge.BlockInputs = true;
         GameManager.flightControlsEnabled = false;
-        aircraft.onDisableUnit += Disable;
+        
         yield return new WaitUntil(() => LoadoutBridge.LoadoutSet);
+        
         if (controller != null) controller.Close();
+        
         CursorManager.SetFlag(CursorFlags.Map, value: false);
-        CmdSetManifest(LoadoutBridge.SelectedUnitIDs.ToArray(), LoadoutBridge.FobMode);
+        CmdSetManifest(LoadoutBridge.Manifest, LoadoutBridge.IncludeFOB);
+        
         Disable(aircraft);
         aircraft.onDisableUnit -= Disable;
     }
@@ -96,38 +105,81 @@ public class DeploymentManager : NetworkBehaviour
 
     private void OnDestroy()
     {
-        if (!aircraft.LocalSim) return;
+        if (!aircraft?.LocalSim ?? true) return;
         DynamicMap.AllowedToOpen = true;
         LoadoutBridge.Clear();
         LoadoutBridge.BlockInputs = false;
         GameManager.flightControlsEnabled = true;
     }
 
-    [ServerRpc(requireAuthority = false)]
-    public void CmdSetManifest(int[] unitIds, bool hasFOB)
+    private bool IsUnitAllowed(DeployableUnit unit)
     {
-        Debug.Log($"Received manifest request. Count: {unitIds.Length}");
+        //TODO
+        return unit != null;
+    }
+
+    [ServerRpc]
+    public void CmdSetManifest(Dictionary<DeployableUnit, int> manifest, bool hasFOB)
+    {
+        Plugin.Logger.LogInfo($"Received manifest request. Count: {manifest.Count}");
         
         unitManifest.Clear();
         fobManager?.hasFob = hasFOB;
-        Array.Sort(unitIds);
-        foreach (int id in unitIds)
+        
+        foreach (var kvp in manifest)
         {
-            unitManifest.Add(id);
+            if (IsUnitAllowed(kvp.Key))
+            {
+                unitManifest.Add(kvp.Key, kvp.Value);
+            }
         }
         
         selectedIndex = 0;
     }
 
-    public void NextUnit() =>  CmdRequestSelectionChange(1, fobSelected);
-
-    public void PrevUnit() => CmdRequestSelectionChange(-1, fobSelected);
-
-    public void ToggleFOB()
+    [Server]
+    public void AddUnit(DeployableUnit unit, int count = 1)
     {
-        if (!HasFOB) return;
-        CmdRequestSelectionChange(0, !fobSelected);
+        if (unit == null) return;
+        
+        if (unitManifest.TryGetValue(unit, out int currentCount))
+        {
+            unitManifest[unit] = currentCount + count;
+        }
+        else
+        {
+            unitManifest[unit] = count;
+        }
     }
+
+    [Server]
+    private bool UseUnit(DeployableUnit unit)
+    {
+        if (unit == null) return false;
+
+        if (unitManifest.TryGetValue(unit, out int currentCount) && currentCount > 0)
+        {
+            int nextCount = currentCount - 1;
+            if (nextCount == 0)
+            {
+                unitManifest.Remove(unit);
+                if (selectedIndex >= unitManifest.Count && unitManifest.Count > 0)
+                {
+                    selectedIndex = unitManifest.Count - 1;
+                }
+            }
+            else
+            {
+                unitManifest[unit] = nextCount;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public void NextUnit() =>  CmdRequestSelectionChange(1);
+    public void PrevUnit() => CmdRequestSelectionChange(-1);
 
     private void Update()
     {
@@ -135,20 +187,21 @@ public class DeploymentManager : NetworkBehaviour
 
         var player = aircraft.pilots[0]?.playerState?.player;
         if (player == null) return;
-        if (player.GetButtonDown($"{Mod_Input.ModShortName}:Select/Deselect FOB"))
+        if (player.GetButtonDown(INPUT_FOB) && !Safety)
         {
-           ToggleFOB();
+            if (!HasFOB) return;
+            CmdDeployFOB();
         }
-        if (player.GetButtonDown($"{Mod_Input.ModShortName}:Next Unit"))
+        if (player.GetButtonDown(INPUT_NEXT))
         {
             NextUnit();
         } 
-        else if (player.GetButtonDown($"{Mod_Input.ModShortName}:Previous Unit"))
+        else if (player.GetButtonDown(INPUT_PREV))
         {
             PrevUnit();
         }
 
-        if (player.GetButton($"{Mod_Input.ModShortName}:Deploy Unit") && !Safety)
+        if (player.GetButton(INPUT_DEPLOY) && !Safety)
         {
             if (Time.timeSinceLevelLoad > lastDeployTime + 1f)
             {
@@ -160,30 +213,43 @@ public class DeploymentManager : NetworkBehaviour
     }
     
     [ServerRpc]
-    private void CmdRequestSelectionChange(int direction, bool fobSelected)
+    private void CmdRequestSelectionChange(int direction)
     {
-        this.fobSelected = fobSelected;
-        if (direction == 0) return;
-        
-        if (unitManifest.Count <= 1) return;
-        
-        int currentUnitID = unitManifest[selectedIndex];
-        int nextIndex = selectedIndex;
-        
-        for (int i = 0; i < unitManifest.Count; i++)
-        {
-            nextIndex = (nextIndex + direction + unitManifest.Count) % unitManifest.Count;
-            if (unitManifest[nextIndex] != currentUnitID)
-            {
-                selectedIndex = nextIndex;
-                return;
-            }
-        }
+        if (direction == 0 || unitManifest.Count <= 1) return;
         selectedIndex = (selectedIndex + direction + unitManifest.Count) % unitManifest.Count;
+    }
+
+    public DeployableUnit GetSelectedUnit()
+    {
+        if (unitManifest.Count == 0 || selectedIndex < 0 || selectedIndex >= unitManifest.Count)
+            return null;
+
+        int i = 0;
+        foreach (var kvp in unitManifest)
+        {
+            if (i == selectedIndex) return kvp.Key;
+            i++;
+        }
+
+        return null;
     }
 
     public bool IsEmpty() => unitManifest.Count == 0;
 
+    [ServerRpc]
+    public void CmdDeployFOB()
+    {
+        DeployFOB();
+    }
+
+    [Server]
+    public void DeployFOB()
+    {
+        if (!HasFOB) return;
+        fobManager.hasFob = false;
+        fobManager.DeployFOB();
+    }
+    
     [ServerRpc]
     public void CmdDeployUnit()
     {
@@ -193,39 +259,30 @@ public class DeploymentManager : NetworkBehaviour
     [Server]
     public void DeployUnit()
     {
-        if (IsEmpty() && !HasFOB) return;
+        if (IsEmpty()) return;
 
-        if (fobSelected)
-        {
-            fobManager.hasFob = false;
-            fobManager.DeployFOB();
-            fobSelected = false;
-            return;
-        }
-        
-        int index = unitManifest[selectedIndex];
-        DeployableUnit unit = availableUnits[index];
+        DeployableUnit unit = GetSelectedUnit();
+        if (unit == null) return;
         
         Vector3 spawnVel = aircraft.rb.velocity + spawnPoint.forward * spawnVelocity;
         
         unit.SpawnUnit(spawnPoint.position, spawnPoint.rotation, spawnVel, aircraft, out var spawned);
         if (!spawned) return;
-        unitManifest.RemoveAt(selectedIndex);
-        
-        if (selectedIndex >= unitManifest.Count && unitManifest.Count > 0)
-        {
-            selectedIndex = unitManifest.Count - 1;
-        }
+        UseUnit(unit);
     }
 
-    public int ContainsUnit(UnitDefinition unitDefinition)
+    public bool ContainsUnit(UnitDefinition unitDefinition, out DeployableUnit foundUnit)
     {
-        foreach (var unitIndex in unitManifest)
+        foreach (var kvp in unitManifest)
         {
-            var du = availableUnits[unitIndex];
-            if (du.UnitDefinition == unitDefinition) return unitIndex;
+            if (kvp.Key != null && kvp.Key.UnitDefinition == unitDefinition)
+            {
+                foundUnit = kvp.Key;
+                return true;
+            }
         }
 
-        return -1;
+        foundUnit = null;
+        return false;
     }
 }
