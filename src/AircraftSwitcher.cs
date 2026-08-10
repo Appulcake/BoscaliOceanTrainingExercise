@@ -118,7 +118,7 @@ public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 			if (newAircraft != null)
 			{
 				newAircraft.weaponManager.currentWeaponStation.SetStationActive(newAircraft, true);
-				CombatHUD.i.weaponStatus.UpdateDisplay(newAircraft.weaponManager.currentWeaponStation);
+				CombatHUD.i.ShowWeaponStation(newAircraft.weaponManager.currentWeaponStation);
 				
 				foreach (var missile in newAircraft.GetMissileWarningSystem().knownMissiles)
 				{

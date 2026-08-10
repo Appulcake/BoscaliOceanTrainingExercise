@@ -125,11 +125,9 @@ public abstract class FOBUnit : DeployableUnit
 	public bool IsAirbaseCenter;
 	public GameObject unitGhost;
 	public int maxUnits = -1;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
-		out bool spawned)
-	{
-		throw new System.NotImplementedException();
-	}
+
+	public abstract override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+		out bool spawned);
 }
 
 [CreateAssetMenu(fileName = "New FOBBuilding", menuName = "Bote/FOBBuilding")]
