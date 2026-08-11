@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
@@ -30,6 +31,7 @@ public class Plugin : BaseUnityPlugin
 	{
 		Instance = this;
 		Logger = base.Logger;
+		InitializeMirageReaderWriters(typeof(Plugin).Assembly);
 		Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 		harmony.PatchAll();
 		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");
@@ -38,6 +40,23 @@ public class Plugin : BaseUnityPlugin
 			"Radial Menu AutoReset",
 			true,
 			new ConfigDescription($"Radial menu for BOTE auto reset to main radial menu."));
+	}
+
+	private static void InitializeMirageReaderWriters(Assembly assembly)
+	{
+		foreach (var type in assembly.GetTypes())
+		{
+			if (type.Name != "GeneratedNetworkCode") continue;
+			RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+
+			foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public))
+			{
+				if (method.Name.StartsWith("InitReadWriters"))
+				{
+					method.Invoke(null, null);
+				}
+			}
+		}
 	}
 
 	private void Update()

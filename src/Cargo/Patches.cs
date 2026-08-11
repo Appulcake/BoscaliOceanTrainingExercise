@@ -70,6 +70,12 @@ public static class AircraftSelectionMenuPatch
 		{
 			LoadoutBridge.SetLoadout(new(), false);
 		}
+
+		if (uiInstance != null)
+		{
+			var controller = uiInstance.GetComponent<CargoUIController>();
+			controller?.Close();
+		}
 	}
 	
 	private static bool selected = false;
@@ -78,7 +84,7 @@ public static class AircraftSelectionMenuPatch
 	[HarmonyPostfix]
 	static void Postfix(AircraftSelectionMenu __instance)
 	{
-		if (ModAssets.i.shipDefinitionsWithDeployer.Contains(__instance.previewAircraft?.definition))
+		if (ModAssets.i.ShipDefinitionsWithDeployer.Contains(__instance.previewAircraft?.definition))
 		{
 			newButton?.gameObject.SetActive(true);
 			selected = true;

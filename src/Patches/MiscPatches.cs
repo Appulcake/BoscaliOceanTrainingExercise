@@ -161,7 +161,7 @@ public static class HangarPatches
     [HarmonyPrefix]
     private static bool SpawnAircraft_Prefix(Hangar __instance, Player player, AircraftDefinition definition, Loadout loadout, float fuelLevel, LiveryKey livery)
     {
-        if (!ModAssets.i.shipDefinitions.Contains(definition)) return true;
+        if (!ModAssets.i.ShipDefinitions.Contains(definition)) return true;
 
         bool attachedUnit = __instance.attachedUnit is Ship or Aircraft;
         bool isDock = __instance.attachedUnit != null && __instance.attachedUnit.definition == ModAssets.i.dockDef;
@@ -224,7 +224,7 @@ public static class TurretPatches
     private static void AimTurret_PostfixVector3(Turret __instance)
     {
         if (__instance.aimSafetyWeapon is not Gun) return;
-        if (!ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
+        if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
         if (Physics.SphereCast(__instance.aimSafetyWeapon.transform.position + __instance.aimSafetyWeapon.transform.forward * 2f, 0.2f, __instance.aimSafetyWeapon.transform.forward, out _, 200f, -8193))
         {
@@ -237,7 +237,7 @@ public static class TurretPatches
     private static void AimTurret_PostfixWeaponStation(Turret __instance)
     {
         if (__instance.aimSafetyWeapon is not Gun gun) return;
-        if (!ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
+        if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
         var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
         if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
@@ -330,7 +330,7 @@ public static class PilotPlayerStatePatches
     private static void PlayerControls_Postfix(PilotPlayerState __instance)
     {
         if (!GameManager.flightControlsEnabled || __instance.pilotStrength < 0.2f) return;
-        if (!ModAssets.i.shipDefinitions.Contains(__instance.pilot.aircraft.definition)) return;
+        if (!ModAssets.i.ShipDefinitions.Contains(__instance.pilot.aircraft.definition)) return;
 
         if (__instance.player.GetButton("Countermeasures") && !__instance.pilot.aircraft.countermeasureTrigger)
         {
@@ -358,7 +358,7 @@ public static class RadialMenuActionPatches
     [HarmonyPostfix]
     private static void TriggerAction_Postfix(RadialMenuAction __instance, Aircraft aircraft)
     {
-        if (!ModAssets.i.shipDefinitions.Contains(aircraft.definition)) return;
+        if (!ModAssets.i.ShipDefinitions.Contains(aircraft.definition)) return;
         switch (__instance.actionType)
         {
             case RadialMenuAction.ActionType.Gear:
@@ -442,7 +442,7 @@ public static class FactionHQPatches
         int num3 = hq.reserveAirframes + count * hq.extraReservesPerPlayer;
         foreach (AircraftDefinition item2 in aircraft)
         {
-            if (ModAssets.i.shipDefinitions.Contains(item2)) continue;
+            if (ModAssets.i.ShipDefinitions.Contains(item2)) continue;
             
             if (!hq.AircraftSupply.TryGetValue(item2, out var value2) || value2.Count <= num3)
             {
@@ -485,7 +485,7 @@ public static class PilotPatches
     [HarmonyPrefix]
     private static void ApplyDamage_Prefix(Pilot __instance, ref float impactDamage)
     {
-        if (__instance.aircraft != null && ModAssets.i.shipDefinitions.Contains(__instance.aircraft.definition))
+        if (__instance.aircraft != null && ModAssets.i.ShipDefinitions.Contains(__instance.aircraft.definition))
             impactDamage = 0f;
     }
 }
@@ -584,7 +584,7 @@ public static class ControlsFilterAutoHoverPatches
             {
                 __instance.surfaceVelocity = nearestShip.rb.velocity;
             }
-            else if (faction != null && faction.TryGetNearestAircraft(position, out var nearestAircraft, out nearestDistance, tempAircraft) && nearestDistance < 250000f && ModAssets.i.shipDefinitionsWithDeployer.Contains(nearestAircraft.definition))
+            else if (faction != null && faction.TryGetNearestAircraft(position, out var nearestAircraft, out nearestDistance, tempAircraft) && nearestDistance < 250000f && ModAssets.i.ShipDefinitionsWithDeployer.Contains(nearestAircraft.definition))
             {
                 __instance.surfaceVelocity = nearestAircraft.rb.velocity;
             } else
@@ -652,132 +652,6 @@ public static class TargetCamPatches
     }
 }
 
-[HarmonyPatch(typeof(AimSolver))]
-public static class AimSolverPatches
-{
-    /*[HarmonyPrefix]
-    [HarmonyPatch(nameof(AimSolver.RunSim))]
-    private static bool RunSim_Prefix(AimSolver __instance, GlobalPosition muzzlePosition, GlobalPosition targetPosition, Vector3 simpleLead, Vector3 targetVel, float estimatedTimeToTarget)
-    {
-        if (!(Time.timeSinceLevelLoad - __instance.lastSim < __instance.simulationInterval))
-        {
-            __instance.lastSim = Time.timeSinceLevelLoad;
-            Vector3 initialVelocity = ((__instance.attachedUnit.speed > 1f) ? __instance.attachedUnit.rb.GetPointVelocity(__instance.firingTransform.position) : Vector3.zero) + simpleLead.normalized * __instance.weaponInfo.muzzleVelocity;
-            if (ModAssets.i.shipDefinitions.Contains(__instance.attachedUnit.definition))
-            {
-                __instance.simCorrection = ImprovedTrajectorySim(__instance.weaponInfo, initialVelocity, muzzlePosition, targetPosition, targetVel, __instance.targetAccelSmoothed, 2000, out var _);
-            }
-            else
-            {
-                __instance.simCorrection = -Kinematics.TrajectorySim(__instance.weaponInfo, initialVelocity, muzzlePosition, targetPosition, targetVel, __instance.targetAccelSmoothed, 0.1f, out var _);
-            }
-            if (__instance.simCorrectionSmoothed == Vector3.zero)
-            {
-                __instance.simCorrectionSmoothed = __instance.simCorrection;
-            }
-        }
-        
-        return false;
-    }*/
-
-    private static Vector3 ImprovedTrajectorySim(WeaponInfo weaponInfo, Vector3 initialVelocity, GlobalPosition initialPosition, GlobalPosition targetPos, Vector3 targetVel, Vector3 targetAccel, int maxSteps, out float timeToTarget)
-    {
-        var dt = Time.fixedDeltaTime;
-
-        var t = 0f;
-
-        var bestDist = float.MaxValue;
-        var bestPos = initialPosition.AsVector3();
-        var bestTarget = targetPos.AsVector3();
-        var bestTime = 0f;
-
-        for (int i = 0; i < maxSteps; i++)
-        {
-            targetVel += targetAccel * dt;
-            targetPos += targetVel * dt;
-            
-            initialVelocity.y -= 9.81f * dt * weaponInfo.gravMult;
-            initialVelocity -= initialVelocity.sqrMagnitude * weaponInfo.dragCoef * dt * initialVelocity.normalized / weaponInfo.muzzleVelocity;
-            
-            initialPosition += initialVelocity * dt;
-            
-            var diff = initialPosition - targetPos;
-            var dist = diff.sqrMagnitude;
-
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestPos = initialPosition.AsVector3();
-                bestTarget = targetPos.AsVector3();
-                bestTime = t;
-            }
-
-            t += dt;
-
-            if (i > 10 && dist > bestDist * 2f) break;
-        }
-        
-        Vector3 final = bestPos - bestTarget;
-        
-        timeToTarget = bestTime;
-        return final;
-    }
-    
-    /*public static Vector3 ImprovedTrajectorySim(WeaponInfo weaponInfo, Vector3 initialVelocity, GlobalPosition initialPosition, GlobalPosition targetPos, Vector3 targetVel, Vector3 targetAccel, float timeStep, out float timeToTarget)
-    {
-        foreach (GameObject visualization in Kinematics.visualizations)
-        {
-            NetworkSceneSingleton<Spawner>.i.DestroyLocal(visualization, 1f);
-        }
-        Kinematics.visualizations.Clear();
-        timeToTarget = 0f;
-        GlobalPosition globalPosition = targetPos;
-        Vector3 vector = targetVel;
-        GlobalPosition globalPosition2 = initialPosition;
-        Vector3 vector2 = initialVelocity;
-        bool flag = false;
-        int num = 0;
-        while (!flag)
-        {
-            timeStep += 0.02f;
-            if (PlayerSettings.debugVis)
-            {
-                GameObject gameObject = NetworkSceneSingleton<Spawner>.i.SpawnLocal(GameAssets.i.debugArrowGreen, Datum.origin);
-                gameObject.transform.position = globalPosition2.ToLocalPosition();
-                gameObject.transform.rotation = Quaternion.LookRotation(vector2);
-                gameObject.transform.localScale = new Vector3(2f, 2f, vector2.magnitude * timeStep);
-                Kinematics.visualizations.Add(gameObject);
-            }
-            Vector3 vector3 = 9.81f * timeStep * weaponInfo.gravMult * Vector3.up + vector2.sqrMagnitude * weaponInfo.dragCoef * timeStep * vector2.normalized / weaponInfo.muzzleVelocity;
-            vector += targetAccel * timeStep;
-            globalPosition += vector * timeStep;
-            vector2 -= vector3 * 0.3f;
-            globalPosition2 += vector2 * timeStep;
-            vector2 -= vector3 * 0.7f;
-            flag = Vector3.Dot(vector2, globalPosition - globalPosition2) <= 0f || Vector3.Dot(vector2, vector2 - vector) <= 0f;
-            timeToTarget += timeStep;
-            num++;
-            if (num > 100)
-            {
-                Debug.LogError($"max TrajectorySim iterations exceeded. InitialVelocity: {initialVelocity}, TargetVelocity: {targetVel}, TargetAccel: {targetAccel}, simVel: {vector2}");
-                break;
-            }
-        }
-        globalPosition2 -= 0.5f * timeStep * vector2;
-        globalPosition -= 0.5f * timeStep * vector;
-        if (PlayerSettings.debugVis)
-        {
-            GameObject gameObject2 = NetworkSceneSingleton<Spawner>.i.SpawnLocal(GameAssets.i.debugArrowGreen, Datum.origin);
-            gameObject2.transform.position = targetPos.ToLocalPosition();
-            gameObject2.transform.rotation = Quaternion.LookRotation(globalPosition - targetPos);
-            gameObject2.transform.localScale = new Vector3(1f, 1f, FastMath.Distance(globalPosition, targetPos));
-            Kinematics.visualizations.Add(gameObject2);
-        }
-        return Vector3.ProjectOnPlane(globalPosition2 - globalPosition, vector2);
-    }*/
-
-}
-
 [HarmonyPatch(typeof(BulletSim.Bullet))]
 public class BulletPatches
 {
@@ -785,6 +659,7 @@ public class BulletPatches
     [HarmonyPatch(nameof(BulletSim.Bullet.TrajectoryTrace))]
     private static void TrajectoryTrace_Postfix(BulletSim.Bullet __instance, WeaponInfo info, Unit owner)
     {
+        if (!ModAssets.i.ShipDefinitions.Contains(owner.definition)) return;
         if (__instance.impacted && !__instance.active && info.blastDamage > 0)
         {
             if (NetworkManagerNuclearOption.i.Server.Active)
@@ -802,7 +677,7 @@ public class EncyclopediaBrowserPatches
     [HarmonyPatch(nameof(EncyclopediaBrowser.SpawnAircraft))]
     private static void SpawnAircraft_Prefix(EncyclopediaBrowser __instance, UnitDefinition definition)
     {
-        if (ModAssets.i.shipDefinitions.Contains(definition))
+        if (ModAssets.i.ShipDefinitions.Contains(definition))
         {
             __instance.spawnTransform = __instance.spawnTransforms[2];
             __instance.waterMaterial.SetVector("_OriginOffset" ,Vector2.zero);

@@ -25,8 +25,9 @@ public class DeploymentManager : NetworkBehaviour
     
     public List<DeployableUnit> availableUnits;
 
-    public readonly SyncIDictionary<DeployableUnit, int> unitManifest = 
-        new(new SortedDictionary<DeployableUnit, int>(DeployableUnitComparer.Instance));
+    /*public readonly SyncIDictionary<DeployableUnit, int> unitManifest = 
+        new(new SortedDictionary<DeployableUnit, int>(DeployableUnitComparer.Instance));*/
+    public readonly SyncDictionary<DeployableUnit, int> unitManifest = new SyncDictionary<DeployableUnit, int>();
     [SyncVar] private int selectedIndex = 0;
     
     public bool Safety = false;

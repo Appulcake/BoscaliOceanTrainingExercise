@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using HarmonyLib;
 using UnityEngine;
 
 namespace NOComponentWIP;
 
+[HarmonyPatch]
 public class SmokeEjector : Countermeasure
 {
 	[SerializeField] private GameObject smokePrefab;
@@ -115,4 +117,26 @@ public class SmokeEjector : Countermeasure
 	{
 		return maxAmmo;
 	}
+	
+	[HarmonyPatch(typeof(Unit), nameof(Unit.LineOfSight))]
+	[HarmonyPrefix]
+	public static bool Prefix(Unit __instance, Vector3 origin, float magnification, ref bool __result, ref RaycastHit ___hit)
+	{
+		if (FastMath.OutOfRange(origin, __instance.transform.position, __instance.visibility * magnification))
+		{
+			__result = false;
+			return false;
+		}
+		
+		if (Physics.Linecast(origin, __instance.transform.position, out ___hit, Mask))
+		{
+			__result = FastMath.InRange(___hit.point, __instance.transform.position, __instance.maxRadius * 2f);
+			return false;
+		}
+
+		__result = true;
+		return false;
+	}
+
+	private static readonly int Mask = PhysicsLayers.StaticsMask | PhysicsLayers.ExclusionZonesMask;
 }

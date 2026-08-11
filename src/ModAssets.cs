@@ -45,12 +45,24 @@ public class ModAssets : ScriptableObject
 	[SerializeField] private List<DeployableUnit> allDeployableUnits;
 
 	public readonly Dictionary<string, DeployableUnit> AllDeployableUnits = new();
+	public readonly HashSet<AircraftDefinition> ShipDefinitions = new();
+	public readonly HashSet<AircraftDefinition> ShipDefinitionsWithDeployer = new();
 
 	private void Initialize()
 	{
 		foreach (var unit in allDeployableUnits)
 		{
 			AllDeployableUnits.TryAdd(unit.JsonKey, unit);
+		}
+
+		foreach (var def in shipDefinitions)
+		{
+			ShipDefinitions.Add(def);
+		}
+
+		foreach (var def in shipDefinitionsWithDeployer)
+		{
+			ShipDefinitionsWithDeployer.Add(def);
 		}
 	}
 	
