@@ -23,6 +23,7 @@ public static class MyPluginInfo
 
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency("com.nikkorap.blueprinter")]
 public class Plugin : BaseUnityPlugin
 {
 	internal static new ManualLogSource Logger;
