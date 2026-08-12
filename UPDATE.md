@@ -1,4 +1,5 @@
 # Boscali Ocean Training Exercise (BOTE) v1.5.0
+![UpdateImage1.5.png](img/UpdateImage1.5.png)
 ## 0.34 Compatibility
 ### New Features:
 - Surf class Patrol *Bote*

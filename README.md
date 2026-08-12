@@ -2,6 +2,8 @@
 
 *A comprehensive surface vessels mod for Nuclear Option.*
 
+[UPDATE 1.5.0 Released!](UPDATE.md)
+
 ![Loading2.png](img/Loading2.png)
 
 ## Features
