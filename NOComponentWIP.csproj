@@ -90,4 +90,9 @@
     <Reference Include="$(GameManagedDir)\UnityEngine*.dll"></Reference>
     
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="bote_1.5.0.nobp" />
+    <EmbeddedResource Include="bote_1.5.0.nobp" />
+  </ItemGroup>
 </Project>
