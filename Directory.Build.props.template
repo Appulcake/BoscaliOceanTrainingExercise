@@ -16,6 +16,7 @@
          Custom Steam library: D:\SteamLibrary\steamapps\common\Nuclear Option
     -->
     <NuclearOptionDir>C:\Program Files (x86)\Steam\steamapps\common\Nuclear Option</NuclearOptionDir>
+    <BepInExPluginsDir>$(NuclearOptionDir)/BepInEx/plugins</BepInExPluginsDir>
 
     <!-- Path to Unity Editor installation (for Blueprinter.Editor only) -->
     <!-- Examples:

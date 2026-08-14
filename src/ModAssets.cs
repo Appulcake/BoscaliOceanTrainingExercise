@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Mirage;
 using NuclearOption.Networking;
 using UnityEngine;
@@ -50,10 +51,18 @@ public class ModAssets : ScriptableObject
 
 	private void Initialize()
 	{
+		InitTask().Forget();
+	}
+
+	private async UniTask InitTask()
+	{
+		Plugin.DebugLog("ModAssets Initialize Await");
+		await new WaitUntil(() => Blueprinter.Plugin.Instance.PatchingComplete);
 		Plugin.DebugLog("ModAssets Initialize");
 		foreach (var unit in allDeployableUnits)
 		{
-			AllDeployableUnits.TryAdd(unit.JsonKey, unit);
+			Plugin.DebugLog($"ModAssets Initialize: Unit: {unit?.JsonKey}");
+			AllDeployableUnits.TryAdd(unit?.JsonKey, unit);
 		}
 
 		foreach (var def in shipDefinitions)
@@ -65,6 +74,8 @@ public class ModAssets : ScriptableObject
 		{
 			ShipDefinitionsWithDeployer.Add(def);
 		}
+		Plugin.DebugLog($"ModAssets Initialize: AllDeployableUnits: {AllDeployableUnits.Count}");
+		Plugin.DebugLog($"ModAssets Initialize: ShipDefinitions: {ShipDefinitions.Count}");
 	}
 	
 	private void OnEnable()
