@@ -226,7 +226,7 @@ public static class TurretPatches
         if (__instance.aimSafetyWeapon is not Gun) return;
         if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
-        if (Physics.SphereCast(__instance.aimSafetyWeapon.transform.position + __instance.aimSafetyWeapon.transform.forward * 2f, 0.2f, __instance.aimSafetyWeapon.transform.forward, out _, 200f, -8193))
+        if (Physics.SphereCast(__instance.aimSafetyWeapon.transform.position + __instance.aimSafetyWeapon.transform.forward * 2f, 0.2f, __instance.aimSafetyWeapon.transform.forward, out _, __instance.attachedUnit?.maxRadius ?? 200f, -8193))
         {
             __instance.aimSafetyWeapon.Safety = true;
         }
@@ -240,7 +240,7 @@ public static class TurretPatches
         if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
         
         var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
-        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
+        if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, __instance.attachedUnit?.maxRadius ?? 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
         {
             __instance.aimSafetyWeapon.Safety = true;
         }

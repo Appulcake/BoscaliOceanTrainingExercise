@@ -38,8 +38,9 @@ public static class AircraftSelectionMenuPatch
 		var flyButton = infoPanel.Find("FlyButton")?.GetComponent<Button>();
 		if (flyButton == null) return;
 
-		flyButton.onClick.RemoveListener(OnFlyButtonClicked);
-		flyButton.onClick.AddListener(OnFlyButtonClicked);
+		flyButton.onClick.SetPersistentListenerState(0,  UnityEventCallState.Off);
+		flyButton.onClick.RemoveListener(() => OnFlyButtonClicked(__instance));
+		flyButton.onClick.AddListener(() => OnFlyButtonClicked(__instance));
 		
 		if (flyButton.TryGetComponent<LayoutElement>(out var layoutElement))
 		{
@@ -64,7 +65,7 @@ public static class AircraftSelectionMenuPatch
 		newButton.gameObject.SetActive(false);
 	}
 
-	private static void OnFlyButtonClicked()
+	private static void OnFlyButtonClicked(AircraftSelectionMenu menu)
 	{
 		if (selected && !LoadoutBridge.LoadoutSet)
 		{
@@ -76,6 +77,7 @@ public static class AircraftSelectionMenuPatch
 			var controller = uiInstance.GetComponent<CargoUIController>();
 			controller?.Close();
 		}
+		menu?.FlyAircraft();
 	}
 	
 	private static bool selected = false;
