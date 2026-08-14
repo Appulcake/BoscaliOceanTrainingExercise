@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -41,6 +42,12 @@ public class Plugin : BaseUnityPlugin
 			"Radial Menu AutoReset",
 			true,
 			new ConfigDescription($"Radial menu for BOTE auto reset to main radial menu."));
+	}
+
+	[Conditional("DEBUG")]
+	internal static void DebugLog(string msg)
+	{
+		Logger.LogInfo(msg);
 	}
 
 	private static void InitializeMirageReaderWriters(Assembly assembly)

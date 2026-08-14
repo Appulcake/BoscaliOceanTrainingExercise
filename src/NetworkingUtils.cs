@@ -6,6 +6,7 @@ public static class DeployableUnitReaderWriter
 {
 	public static void WriteDeployableUnit(this NetworkWriter writer, DeployableUnit unit)
 	{
+		Plugin.DebugLog($"WriteDeployableUnit: {unit.JsonKey}");
 		if (unit == null)
 		{
 			writer.WriteString(string.Empty);
@@ -17,7 +18,7 @@ public static class DeployableUnitReaderWriter
 	public static DeployableUnit ReadDeployableUnit(this NetworkReader reader)
 	{
 		string jsonKey = reader.ReadString();
-
+		Plugin.DebugLog($"ReadDeployableUnit: {jsonKey}");
 		if (string.IsNullOrEmpty(jsonKey))
 			return null;
 

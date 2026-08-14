@@ -65,11 +65,11 @@ public class FOBManager : NetworkBehaviour
             fobUI = null;
         }
         
-        aircraft?.onDisableUnit -= Disable;
+        this.aircraft?.onDisableUnit -= Disable;
+        if (!aircraft?.LocalSim ?? true) return;
         
         CursorManager.SetFlag(CursorFlags.Map, value: false);
         DynamicMap.AllowedToOpen = true;
-        LoadoutBridge.Clear();
         LoadoutBridge.BlockInputs = false;
         GameManager.flightControlsEnabled = true;
     }

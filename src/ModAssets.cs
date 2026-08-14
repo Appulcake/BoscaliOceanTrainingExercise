@@ -50,6 +50,7 @@ public class ModAssets : ScriptableObject
 
 	private void Initialize()
 	{
+		Plugin.DebugLog("ModAssets Initialize");
 		foreach (var unit in allDeployableUnits)
 		{
 			AllDeployableUnits.TryAdd(unit.JsonKey, unit);
@@ -68,6 +69,7 @@ public class ModAssets : ScriptableObject
 	
 	private void OnEnable()
 	{
+		Plugin.DebugLog("ModAssets OnEnable");
 		hideFlags = HideFlags.DontUnloadUnusedAsset;
 	}
 }
