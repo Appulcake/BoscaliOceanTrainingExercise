@@ -47,7 +47,7 @@ public class RadialMenu : ScriptableObject
 	public static void Update()
 	{
 		if (RadialMenuMain.i == null) return;
-		if (Plugin.Instance?.AutoResetBind ?? false) return;
+		if (Plugin.Instance?.MenuAutoReset ?? false) return;
 		
 		if (RadialMenuMain.IsInUse())
 		{

@@ -9,6 +9,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using NOComponentWIP.ServerConfig;
 using Rewired;
 using Rewired.UI.ControlMapper;
 using UnityEngine;
@@ -29,6 +30,36 @@ public class Plugin : BaseUnityPlugin
 {
 	internal static new ManualLogSource Logger;
 	internal static Plugin Instance;
+	
+	// ----- CONFIG -----
+	
+	private ConfigEntry<bool> menuAutoReset;
+	public bool MenuAutoReset => menuAutoReset.Value;
+
+	private ConfigEntry<bool> enableUnitEconomy;
+	public bool EnableUnitEconomy => enableUnitEconomy.Value;
+
+	private ConfigEntry<bool> enableUnitLimits;
+	public bool EnableUnitLimits => enableUnitLimits.Value;
+
+	private void SetupConfig()
+	{
+		menuAutoReset = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
+			"Radial Menu AutoReset",
+			true,
+			new ConfigDescription($"Auto reset to main radial menu."));
+		
+		enableUnitEconomy = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
+			"Enable Unit Economy",
+			false,
+			new ConfigDescription($"Enable unit allocation costs for players."));
+		
+		enableUnitLimits = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
+			"Enable Unit Limits",
+			false,
+			new ConfigDescription($"Enable unit limits for players/faction."));
+	}
+	
 	private void Awake()
 	{
 		Instance = this;
@@ -36,12 +67,12 @@ public class Plugin : BaseUnityPlugin
 		InitializeMirageReaderWriters(typeof(Plugin).Assembly);
 		Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 		harmony.PatchAll();
-		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");
+		SetupConfig();
 
-		autoResetBind = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
-			"Radial Menu AutoReset",
-			true,
-			new ConfigDescription($"Radial menu for BOTE auto reset to main radial menu."));
+		ModAssets.OnInitialize += UnitConfig.LoadOrCreateConfig;
+		
+		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");
+		
 	}
 
 	[Conditional("DEBUG")]
@@ -83,7 +114,4 @@ public class Plugin : BaseUnityPlugin
 			AircraftSwitcher.i.SwitchAircraft(player, aircraft, newAircraft);
 		}
 	}
-
-	private ConfigEntry<bool> autoResetBind;
-	public bool AutoResetBind => autoResetBind.Value;
 }

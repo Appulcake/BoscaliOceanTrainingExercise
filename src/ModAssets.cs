@@ -10,6 +10,10 @@ namespace NOComponentWIP;
 [CreateAssetMenu(fileName = "ModAssets", menuName = "Bote/ModAssets")]
 public class ModAssets : ScriptableObject
 {
+	public static Action<bool> OnInitialize;
+
+	private bool firstInitialize = true;
+	
 	private static ModAssets _instance;
 	public static ModAssets i
 	{
@@ -74,6 +78,10 @@ public class ModAssets : ScriptableObject
 		{
 			ShipDefinitionsWithDeployer.Add(def);
 		}
+		
+		OnInitialize?.Invoke(firstInitialize);
+		firstInitialize = false;
+		
 		Plugin.DebugLog($"ModAssets Initialize: AllDeployableUnits: {AllDeployableUnits.Count}");
 		Plugin.DebugLog($"ModAssets Initialize: ShipDefinitions: {ShipDefinitions.Count}");
 	}

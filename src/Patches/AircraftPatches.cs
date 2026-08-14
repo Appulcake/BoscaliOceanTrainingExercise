@@ -126,7 +126,7 @@ public class AircraftPatches
 	static void FixedUpdate_Postfix(Aircraft __instance)
 	{
 		var ac = __instance;
-		if (ModAssets.i.ShipDefinitions.Contains(__instance.definition)) return; 
+		if (!ModAssets.i.ShipDefinitions.Contains(__instance.definition)) return; 
 		if (ac.hit.collider != null && ac.hit.collider.attachedRigidbody != null)
 		{
 			var velocity = ac.cockpit.rb.velocity;
