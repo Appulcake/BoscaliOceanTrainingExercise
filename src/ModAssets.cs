@@ -61,7 +61,7 @@ public class ModAssets : ScriptableObject
 	private async UniTask InitTask()
 	{
 		Plugin.DebugLog("ModAssets Initialize Await");
-		await new WaitUntil(() => Blueprinter.Plugin.Instance.PatchingComplete);
+		await new WaitUntil(BlueprinterHelper.IsPatchingComplete);
 		Plugin.DebugLog("ModAssets Initialize");
 		foreach (var unit in allDeployableUnits)
 		{

@@ -655,7 +655,7 @@ public static class TargetCamPatches
 [HarmonyPatch(typeof(BulletSim.Bullet))]
 public class BulletPatches
 {
-    [HarmonyPostfix]
+    /*[HarmonyPostfix]
     [HarmonyPatch(nameof(BulletSim.Bullet.TrajectoryTrace))]
     private static void TrajectoryTrace_Postfix(BulletSim.Bullet __instance, WeaponInfo info, Unit owner)
     {
@@ -667,7 +667,7 @@ public class BulletPatches
                 DamageEffects.BlastFrag(info.blastDamage, __instance.position.ToLocalPosition(), owner.persistentID, PersistentID.None);
             }
         }
-    }
+    }*/
 }
 
 [HarmonyPatch(typeof(EncyclopediaBrowser))]

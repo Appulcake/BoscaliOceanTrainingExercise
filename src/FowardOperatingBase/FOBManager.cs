@@ -50,7 +50,7 @@ public class FOBManager : NetworkBehaviour
         
         uiController.Initialize(this, aircraft, aircraft.rb.position, availableFOBUnits,160);
         
-        yield return new WaitUntil(() => !BuildingFob); //will be changed to check when fob is done
+        yield return new WaitUntil(() => !BuildingFob || aircraft.Networkdisabled); //will be changed to check when fob is done
         
         Cleanup();
     }

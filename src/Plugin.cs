@@ -20,7 +20,7 @@ public static class MyPluginInfo
 {
 	public const string PLUGIN_GUID = "com.minec.bote";
 	public const string PLUGIN_NAME = "BoscaliOceanTrainingExercise";
-	public const string PLUGIN_VERSION = "1.5.0";
+	public const string PLUGIN_VERSION = "1.5.1";
 }
 
 
