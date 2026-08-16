@@ -15,11 +15,12 @@ public class VLSBoosterActive : VLSBooster
 		missile.onInitialize -= VLSBoosterActive_OnInitialize;
 		if (missile.owner == null || GameManager.gameState == GameState.Encyclopedia)
 		{
+			missile.boosterIsAttached = false;
 			Destroy(gameObject);
 		}
 		else
 		{
-			Activate();
+			missile.boosterIsAttached = true;
 		}
 	}
 }

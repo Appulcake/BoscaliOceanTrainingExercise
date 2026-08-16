@@ -2,18 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using BepInEx;
+using Mirage;
 using Newtonsoft.Json;
 
 namespace NOComponentWIP.ServerConfig;
 
-public class UnitConfigData
+public struct UnitConfigData
 {
+	public UnitConfigData() { }
+
 	public float GlobalCostMultiplier { get; set; } = 1.0f;
 	public Dictionary<string, UnitConfigEntry> Units { get; set; } = new();
 }
 
-public class UnitConfigEntry
+public struct UnitConfigEntry
 {
+	public UnitConfigEntry() { }
+
 	public bool Enabled { get; set; } = true;
 	public float? Cost { get; set; } = null;
 
@@ -25,16 +30,36 @@ public static class UnitConfig
 {
 	private static readonly string ConfigPath = Path.Combine(Paths.ConfigPath, "BOTE/UnitConfig.jsonc");
 
-	public static UnitConfigData ConfigData { get; set; } = new();
+	public static UnitConfigData LocalConfigData { get; set; } = new();
+	public static UnitConfigData ActiveConfigData { get; set; } = new();
 	
-	public static bool UnitAllowed(string key) => ConfigData.Units[key].Enabled;
-	public static int PlayerMax(string key) => ConfigData.Units[key].PlayerMax;
-	public static int FactionMax(string key) => ConfigData.Units[key].FactionMax;
+	public static bool UnitAllowed(string key) => 
+		ActiveConfigData.Units.TryGetValue(key, out var u) ? u.Enabled : true;
+
+	public static int PlayerMax(string key) => 
+		ActiveConfigData.Units.TryGetValue(key, out var u) ? u.PlayerMax : -1;
+
+	public static int FactionMax(string key) => 
+		ActiveConfigData.Units.TryGetValue(key, out var u) ? u.FactionMax : -1;
+
 	public static float UnitCost(string key)
 	{
-		var unit =  ConfigData.Units[key];
-		if (unit.Cost == null) return ModAssets.i?.AllDeployableUnits[key].UnitDefinition.value ?? 0f;
-		return unit.Cost ?? 0f;
+		if (ActiveConfigData.Units.TryGetValue(key, out var unit) && unit.Cost.HasValue)
+		{
+			return unit.Cost.Value;
+		}
+		var baseValue = ModAssets.i?.AllDeployableUnits.GetValueOrDefault(key)?.UnitDefinition.value;
+		return (baseValue ?? 0f) * ActiveConfigData.GlobalCostMultiplier;
+	}
+
+	public static void LoadRemoteConfig(UnitConfigData config)
+	{
+		ActiveConfigData = config;
+	}
+
+	public static void RestoreConfig()
+	{
+		ActiveConfigData = LocalConfigData;
 	}
 
 	public static void LoadOrCreateConfig(bool firstInit)
@@ -49,12 +74,12 @@ public static class UnitConfig
 			try
 			{
 				string jsonString = File.ReadAllText(ConfigPath);
-				ConfigData = JsonConvert.DeserializeObject<UnitConfigData>(jsonString);
+				LocalConfigData = JsonConvert.DeserializeObject<UnitConfigData>(jsonString);
 			}
 			catch (Exception ex)
 			{
 				Plugin.Logger.LogError($"Error loading UnitSettings.jsonc: {ex.Message}");
-				ConfigData = new UnitConfigData();
+				LocalConfigData = new UnitConfigData();
 			}
 		}
 
@@ -65,9 +90,9 @@ public static class UnitConfig
 			foreach (var kvp in ModAssets.i.AllDeployableUnits)
 			{
 				string key = kvp.Key;
-				if (!ConfigData.Units.ContainsKey(key))
+				if (!LocalConfigData.Units.ContainsKey(key))
 				{
-					ConfigData.Units[key] = new UnitConfigEntry { Enabled = true, Cost = null };
+					LocalConfigData.Units[key] = new UnitConfigEntry { Enabled = true, Cost = null };
 					modified = true;
 				}
 			}
@@ -75,8 +100,10 @@ public static class UnitConfig
 
 		if (modified || !File.Exists(ConfigPath))
 		{
-			SaveConfig(ConfigData);
+			SaveConfig(LocalConfigData);
 		}
+
+		ActiveConfigData = LocalConfigData;
 	}
 
 	public static void SaveConfig(UnitConfigData config)
