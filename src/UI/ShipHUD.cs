@@ -203,7 +203,7 @@ public class ShipHUD : HUDApp
                 if (fCount != -1)
                 {
                     factionLimitText.text = $"FACT: {fCount}/{fMax}";
-                    factionLimitText.color = (pCount >= pMax) ? alertColor : selectedColor;
+                    factionLimitText.color = (fCount >= fMax) ? alertColor : selectedColor;
                 }
                 else
                 {
