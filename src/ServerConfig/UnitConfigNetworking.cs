@@ -40,24 +40,38 @@ public struct NetworkFactionCount
 }
 
 [HarmonyPatch]
-public static class UnitConfigSync
+public static class NetworkInitializers
 {
 	[HarmonyPatch(typeof(NetworkManagerNuclearOption), nameof(NetworkManagerNuclearOption.Awake))]
+	[HarmonyPostfix]
 	private static void NMNO_Awake_Postfix(NetworkManagerNuclearOption __instance)
 	{
-		Register(__instance.Server, __instance.Client );
-		UnitCountTracker.Register(__instance.Server, __instance.Client);
+		Plugin.DebugLog("NetworkManagerNuclearOption.Awake");
+		UnitConfigSync.RegisterListeners(__instance.Server, __instance.Client );
+		UnitCountTracker.RegisterListeners(__instance.Server, __instance.Client);
 	}
-	
-	public static void Register(NetworkServer Server, NetworkClient Client)
+
+	[HarmonyPatch(typeof(NetworkMission), nameof(NetworkMission.ClientStarted))]
+	[HarmonyPostfix]
+	private static void NetworkMission_ClientStarted_Postfix(NetworkMission __instance)
 	{
-		
-		if (Client == null || Server == null) return;
-		
-		Client.MessageHandler.RegisterHandler<NetworkUnitConfigData>(OnReceiveServerConfig);
-		Client.Disconnected.AddListener(OnClientDisconnected);
-			
-		Server.Authenticated.AddListener(OnPlayerAuthenticated);
+		UnitConfigSync.RegisterHandlers(__instance.server, __instance.client);
+		UnitCountTracker.RegisterHandlers(__instance.server, __instance.client);
+	}
+}
+
+[HarmonyPatch]
+public static class UnitConfigSync
+{
+	public static void RegisterListeners(NetworkServer Server, NetworkClient Client)
+	{
+		Client?.Disconnected.AddListener(OnClientDisconnected);
+		Server?.Authenticated.AddListener(OnPlayerAuthenticated);
+	}
+
+	public static void RegisterHandlers(NetworkServer Server, NetworkClient Client)
+	{
+		Client?.MessageHandler.RegisterHandler<NetworkUnitConfigData>(OnReceiveServerConfig);
 	}
 
 	private static void OnPlayerAuthenticated(INetworkPlayer player)

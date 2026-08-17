@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using Mirage;
+using NOComponentWIP;
 using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using UnityEngine;
@@ -32,15 +33,19 @@ public static class UnitCountTracker
     private static readonly Dictionary<(ulong SteamID, string JsonKey), int> PlayerCounts = new();
     private static readonly Dictionary<(string Faction, string JsonKey), int> FactionCounts = new();
 
-    public static void Register(NetworkServer Server, NetworkClient Client)
+    public static void RegisterListeners(NetworkServer Server, NetworkClient Client)
     {
-        server = Server;
-        client = Client;
-        
-        client?.MessageHandler.RegisterHandler<NetworkPlayerCount>(OnReceiveCountUpdate);
-        
+        server ??= Server;
+        client ??= Client;
         server?.Stopped.AddListener(Reset);
         Reset();
+    }
+    
+    public static void RegisterHandlers(NetworkServer Server, NetworkClient Client)
+    {
+        server ??= Server;
+        client ??= Client;
+        Client?.MessageHandler.RegisterHandler<NetworkPlayerCount>(OnReceiveCountUpdate);
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.ServerApplyFaction))]
@@ -66,6 +71,8 @@ public static class UnitCountTracker
         string factionName = unit.NetworkHQ?.faction?.factionName ?? "Unassigned";
         
         if (DeployedUnits.ContainsKey(netId)) return;
+        
+        Plugin.DebugLog($"Tracking Unit: {jsonKey} : {netId}");
 
         var record = new DeployedUnit
         {
@@ -90,9 +97,11 @@ public static class UnitCountTracker
 
         uint netId = unit.persistentID.Id;
         unit.onDisableUnit -= UnregisterSpawn;
+        
 
         if (DeployedUnits.Remove(netId, out var record))
         {
+            Plugin.DebugLog($"No longer tracking Unit: {record.JsonKey} : {netId}");
             DecrementCount(record.PlayerID, record.FactionID, record.JsonKey);
             
             SendUnitCount(record.JsonKey);
@@ -117,6 +126,14 @@ public static class UnitCountTracker
             };
 
             networkPlayer.Send(data);
+        }
+    }
+
+    public static void Resync()
+    {
+        foreach (var player in server.AuthenticatedPlayers)
+        {
+            SyncPlayerState(player);
         }
     }
 	

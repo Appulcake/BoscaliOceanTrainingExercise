@@ -38,6 +38,9 @@ public class Plugin : BaseUnityPlugin
 	
 	private ConfigEntry<KeyboardShortcut> reloadUnitConfig;
 	public KeyboardShortcut ReloadUnitConfig => reloadUnitConfig.Value;
+	
+	private ConfigEntry<KeyboardShortcut> resyncUnitCounts;
+	public KeyboardShortcut ResyncUnitCounts => resyncUnitCounts.Value;
 
 	private ConfigEntry<KeyboardShortcut> debugSwitchUnit;
 	public KeyboardShortcut DebugSwitchUnit => debugSwitchUnit.Value;
@@ -53,6 +56,11 @@ public class Plugin : BaseUnityPlugin
 			"Reload Unit Config",
 			new KeyboardShortcut(KeyCode.None),
 			"Keyboard shortcut to live reload UnitConfig.jsonc");
+		
+		resyncUnitCounts = Config.Bind($"Debug",
+			"Resync Unit Counts",
+			new KeyboardShortcut(KeyCode.None),
+			"Keyboard shortcut to resync unit counts (only needed in conjuction with Reload Unit Config)");
 		
 		debugSwitchUnit = Config.Bind($"Debug",
 			"Switch Unit (SINGLEPLAYER)",
@@ -117,6 +125,11 @@ public class Plugin : BaseUnityPlugin
 		if (ReloadUnitConfig.IsDown())
 		{
 			UnitConfig.ReloadConfig();
+		}
+
+		if (ResyncUnitCounts.IsDown())
+		{
+			UnitCountTracker.Resync();
 		}
 	}
 }
