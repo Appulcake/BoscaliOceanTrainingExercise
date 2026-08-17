@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using NOComponentWIP.Patches;
+using NOComponentWIP.ServerConfig;
 using NuclearOption.UIStyleSystem;
 using TMPro;
 
@@ -19,6 +20,8 @@ public class ShipHUD : HUDApp
     [SerializeField] private GameObject deploymentHud;
     [SerializeField] private TextMeshProUGUI resupplyText;
     [SerializeField] private TextMeshProUGUI disembarkText;
+    [SerializeField] private TextMeshProUGUI playerLimitText;
+    [SerializeField] private TextMeshProUGUI factionLimitText;
     
     private Aircraft aircraft;
     private DeploymentManager manager;
@@ -41,12 +44,6 @@ public class ShipHUD : HUDApp
         manager = bridge.deploymentManager;
         fobManager = bridge.fobManager;
         resupplyController = bridge.resupplyController;
-        
-        if (bridge == null)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
 
         itemTemplate.gameObject.SetActive(false);
         
@@ -171,6 +168,61 @@ public class ShipHUD : HUDApp
             Vector2 anchoredPos = contentParent.anchoredPosition;
             anchoredPos.y = Mathf.Lerp(anchoredPos.y, targetY, Time.deltaTime * 10f);
             contentParent.anchoredPosition = anchoredPos;
+        }
+        
+        if (UnitConfig.UnitLimits() && selectedUnit != null)
+        {
+            var key = selectedUnit.JsonKey;
+            var fCount = UnitConfig.GetCurrentFactionCount(key);
+            var fMax = UnitConfig.FactionMax(key);
+            
+            var pCount = UnitConfig.GetCurrentPlayerCount(key);
+            var pMax = UnitConfig.PlayerMax(key);
+
+            if (pMax != -1)
+            {
+                if (pCount != -1)
+                {
+                    playerLimitText.text = $"PLYR: {pCount}/{pMax}";
+                    playerLimitText.color = (pCount >= pMax) ? alertColor : selectedColor;
+                }
+                else
+                {
+                    playerLimitText.text = $"PLYR: ERR";
+                    playerLimitText.color = alertColor;
+                }
+            }
+            else
+            {
+                playerLimitText.text = $"PLYR: N/A";
+                playerLimitText.color = selectedColor;
+            }
+            
+            if (fMax != -1)
+            {
+                if (fCount != -1)
+                {
+                    factionLimitText.text = $"FACT: {fCount}/{fMax}";
+                    factionLimitText.color = (pCount >= pMax) ? alertColor : selectedColor;
+                }
+                else
+                {
+                    factionLimitText.text = $"FACT: ERR";
+                    factionLimitText.color = alertColor;
+                }
+            }
+            else
+            {
+                factionLimitText.text = $"FACT: N/A";
+                factionLimitText.color = selectedColor;
+            }
+        }
+        else
+        {
+            playerLimitText.text = $"PLYR: N/A";
+            playerLimitText.color = selectedColor;
+            factionLimitText.text = $"FACT: N/A";
+            factionLimitText.color = selectedColor;
         }
     }
 

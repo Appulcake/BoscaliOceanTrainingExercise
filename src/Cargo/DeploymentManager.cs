@@ -5,6 +5,7 @@ using System.Linq;
 using Mirage;
 using Mirage.Collections;
 using Mirage.Serialization;
+using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
@@ -124,17 +125,40 @@ public class DeploymentManager : NetworkBehaviour
     {
         Plugin.Logger.LogInfo($"Received manifest request. Count: {manifest.Count}");
         
+        if (aircraft.Player == null) return;
+
         unitManifest.Clear();
         fobManager?.hasFob = hasFOB;
         
+        float allocation = aircraft.Player.Allocation;
+        float totalCost = 0f;
+        bool errored = false;
+
         foreach (var kvp in manifest)
         {
-            if (IsUnitAllowed(kvp.Key))
+            if (errored) break;
+            if (!IsUnitAllowed(kvp.Key)) continue;
+            for (int i = 0; i < kvp.Value; i++)
             {
-                unitManifest.Add(kvp.Key, kvp.Value);
+                var cost = UnitConfig.UnitCost(kvp.Key.JsonKey);
+                allocation -= cost;
+
+                if (allocation <= 0f)
+                {
+                    errored = true;
+                    Plugin.Logger.LogWarning(
+                        $"Player: {aircraft.Player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)} sent invalid manifest, insufficient allocation");
+                    break;
+                }
+
+                totalCost += cost;
+
+                unitManifest.TryAdd(kvp.Key, kvp.Value);
             }
         }
         
+        aircraft.Player.AddAllocation(0 - totalCost);
+
         selectedIndex = 0;
     }
 
@@ -267,7 +291,7 @@ public class DeploymentManager : NetworkBehaviour
         
         Vector3 spawnVel = aircraft.rb.velocity + spawnPoint.forward * spawnVelocity;
         
-        unit.SpawnUnit(spawnPoint.position, spawnPoint.rotation, spawnVel, aircraft, out var spawned);
+        unit.SpawnUnit(spawnPoint.position, spawnPoint.rotation, spawnVel, aircraft, false, out var spawned);
         if (!spawned) return;
         UseUnit(unit);
     }

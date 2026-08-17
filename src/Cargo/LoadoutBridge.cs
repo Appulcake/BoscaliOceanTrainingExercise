@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using NOComponentWIP.ServerConfig;
 
 namespace NOComponentWIP;
 
@@ -10,6 +12,8 @@ public static class LoadoutBridge
 	public static bool LoadoutSet { get; private set; }
 	public static bool IncludeFOB { get; private set; }
 	public static bool BlockInputs { get; set; }
+
+	public static Action onLoadoutChange;
 
 	public static void SetLoadout(Dictionary<DeployableUnit, int> sourceManifest, bool includeFob)
 	{
@@ -28,6 +32,7 @@ public static class LoadoutBridge
 
 		IncludeFOB = includeFob;
 		LoadoutSet = true;
+		onLoadoutChange?.Invoke();
 	}
 
 	public static void Clear()
@@ -36,5 +41,18 @@ public static class LoadoutBridge
 		IncludeFOB = false;
 		LoadoutSet = false;
 		BlockInputs = false;
+		onLoadoutChange?.Invoke();
+	}
+	
+	public static float CalculateCost(Dictionary<DeployableUnit, int> manifest)
+	{
+		float cost = 0f;
+        
+		foreach (var unit in manifest)
+		{
+			cost += UnitConfig.UnitCost(unit.Key.JsonKey) * unit.Value;
+		}
+
+		return cost;
 	}
 }

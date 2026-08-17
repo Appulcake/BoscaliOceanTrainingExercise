@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Mirage;
+using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
@@ -30,8 +31,31 @@ public abstract class DeployableUnit : ScriptableObject
 	public bool eventContent;
 	public virtual UnitDefinition UnitDefinition { get; } = null;
 	public string JsonKey => UnitDefinition?.jsonKey ?? string.Empty;
+	public float Value => UnitDefinition?.value ?? 0f;
 
-	public abstract Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft, out bool spawned);
+	public Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft, bool overrideBlock, out bool spawned)
+	{
+		if (!overrideBlock)
+		{
+			if (!UnitConfig.UnitAllowed(JsonKey) || !UnitConfig.LimitCheck(JsonKey))
+			{
+				spawned = false;
+				return null;
+			}
+		}
+
+		var unit = SpawnUnitInternal(position, rotation, spawnVel, aircraft, out spawned);
+		
+		if (spawned && unit != null)
+		{
+			var id = aircraft?.Player.SteamID ?? 0;
+			UnitCountTracker.RegisterUnit(unit, id);
+		}
+		
+		return unit;
+	}
+	
+	protected abstract Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft, out bool spawned);
 }
 
 [CreateAssetMenu(fileName = "New DeployableVehicle", menuName = "Bote/DeployableVehicle")]
@@ -41,7 +65,7 @@ public class DeployableVehicle : DeployableUnit
 	public Vector3 spawnOffset;
 	public override UnitDefinition UnitDefinition => unitDefinition;
 	
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = false;
@@ -69,7 +93,7 @@ public class DeployableAircraft : DeployableUnit
 {
 	public AircraftDefinition unitDefinition;
 	public override UnitDefinition UnitDefinition => unitDefinition;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = false;
@@ -102,7 +126,7 @@ public class DeployableMissile : DeployableUnit
 {
 	public MissileDefinition unitDefinition;
 	public override UnitDefinition UnitDefinition => unitDefinition;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = false;
@@ -126,7 +150,7 @@ public abstract class FOBUnit : DeployableUnit
 	public GameObject unitGhost;
 	public int maxUnits = -1;
 
-	public abstract override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected abstract override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned);
 }
 
@@ -135,7 +159,7 @@ public class FOBBuilding : FOBUnit
 {
 	public BuildingDefinition unitDefinition;
 	public override UnitDefinition UnitDefinition => unitDefinition;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = false;
@@ -150,7 +174,7 @@ public class FOBVehicle : FOBUnit
 {
 	public VehicleDefinition unitDefinition;
 	public override UnitDefinition UnitDefinition => unitDefinition;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = true;
@@ -163,7 +187,7 @@ public class FOBScenery : FOBUnit
 {
 	public SceneryDefinition unitDefinition;
 	public override UnitDefinition UnitDefinition => unitDefinition;
-	public override Unit SpawnUnit(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
+	protected override Unit SpawnUnitInternal(Vector3 position, Quaternion rotation, Vector3 spawnVel, Aircraft aircraft,
 		out bool spawned)
 	{
 		spawned = true;

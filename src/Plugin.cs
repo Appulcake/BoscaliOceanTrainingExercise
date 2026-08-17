@@ -35,29 +35,29 @@ public class Plugin : BaseUnityPlugin
 	
 	private ConfigEntry<bool> menuAutoReset;
 	public bool MenuAutoReset => menuAutoReset.Value;
+	
+	private ConfigEntry<KeyboardShortcut> reloadUnitConfig;
+	public KeyboardShortcut ReloadUnitConfig => reloadUnitConfig.Value;
 
-	private ConfigEntry<bool> enableUnitEconomy;
-	public bool EnableUnitEconomy => enableUnitEconomy.Value;
-
-	private ConfigEntry<bool> enableUnitLimits;
-	public bool EnableUnitLimits => enableUnitLimits.Value;
+	private ConfigEntry<KeyboardShortcut> debugSwitchUnit;
+	public KeyboardShortcut DebugSwitchUnit => debugSwitchUnit.Value;
 
 	private void SetupConfig()
 	{
-		menuAutoReset = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
+		menuAutoReset = Config.Bind($"Radial Menu",
 			"Radial Menu AutoReset",
 			true,
 			new ConfigDescription($"Auto reset to main radial menu."));
+
+		reloadUnitConfig = Config.Bind($"Debug",
+			"Reload Unit Config",
+			new KeyboardShortcut(KeyCode.None),
+			"Keyboard shortcut to live reload UnitConfig.jsonc");
 		
-		enableUnitEconomy = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
-			"Enable Unit Economy",
-			false,
-			new ConfigDescription($"Enable unit allocation costs for players."));
-		
-		enableUnitLimits = Config.Bind($"{MyPluginInfo.PLUGIN_NAME}",
-			"Enable Unit Limits",
-			false,
-			new ConfigDescription($"Enable unit limits for players/faction."));
+		debugSwitchUnit = Config.Bind($"Debug",
+			"Switch Unit (SINGLEPLAYER)",
+			new KeyboardShortcut(KeyCode.Semicolon),
+			"If friendly aircraft is first target and in singleplayer, switch control to that aircraft");
 	}
 	
 	private void Awake()
@@ -103,7 +103,7 @@ public class Plugin : BaseUnityPlugin
 		RadialMenu.Update();
 		
 		if (GameManager.gameState != GameState.SinglePlayer) return;
-		if (Input.GetKeyDown(KeyCode.Semicolon))
+		if (DebugSwitchUnit.IsDown())
 		{
 			if (AircraftSwitcher.i == null) return;
 			if (!GameManager.GetLocalPlayer(out NuclearOption.Networking.Player player)) return;
@@ -112,6 +112,11 @@ public class Plugin : BaseUnityPlugin
 			var targetUnit = aircraft.weaponManager.targetList[0];
 			if (targetUnit == null || targetUnit is not Aircraft newAircraft) return;
 			AircraftSwitcher.i.SwitchAircraft(player, aircraft, newAircraft);
+		}
+
+		if (ReloadUnitConfig.IsDown())
+		{
+			UnitConfig.ReloadConfig();
 		}
 	}
 }

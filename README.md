@@ -26,6 +26,14 @@
   - Information about resupply, vehicle deployment, and if it is safe to eject from the ship.
 - As well as many more features...
 
+## Troubleshooting (Common Issues)
+- Mod doesn't load
+  - Make sure [Blueprinter](https://github.com/nikkorap/NOBlueprinter-Releases/releases/latest) is installed
+- LCAC cannot move
+  - Unlike the other ships, the LCAC uses Ibis controls for its throttle because of the ducted fans, and yaw for steering only
+- Custom inputs don't work
+  - Open ConfigManager with f1 (make sure it is installed), find BoscaliOceanTrainingExercise_Inputs, and click the reset button. This will not reset your keybindings.
+
 ## Showcase Images (Loading Screens):
 
 ![Loading1.png](img/Loading1.png)

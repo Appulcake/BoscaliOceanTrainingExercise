@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Mirage;
 using NuclearOption.Networking;
 using NuclearOption.Networking.Authentication;
+using UnityEngine;
 
 namespace NOComponentWIP.ServerConfig;
 
@@ -10,6 +13,8 @@ namespace NOComponentWIP.ServerConfig;
 public struct NetworkUnitConfigData
 {
 	public float GlobalCostMultiplier;
+	public bool UnitLimitsEnabled;
+	public bool UnitEconomyEnabled;
 	
 	[MaxLength(128)]
 	public NetworkUnitConfigEntry[] Units;
@@ -27,6 +32,13 @@ public struct NetworkUnitConfigEntry
 	public int FactionMax;
 }
 
+[NetworkMessage]
+public struct NetworkFactionCount
+{
+	public string JsonKey;
+	public int FactionCount;
+}
+
 [HarmonyPatch]
 public static class UnitConfigSync
 {
@@ -34,6 +46,7 @@ public static class UnitConfigSync
 	private static void NMNO_Awake_Postfix(NetworkManagerNuclearOption __instance)
 	{
 		Register(__instance.Server, __instance.Client );
+		UnitCountTracker.Register(__instance.Server, __instance.Client);
 	}
 	
 	public static void Register(NetworkServer Server, NetworkClient Client)
@@ -89,31 +102,34 @@ public static class UnitConfigSync
 		return new UnitConfigData
 		{
 			GlobalCostMultiplier = config.GlobalCostMultiplier,
+			UnitLimitsEnabled = config.UnitLimitsEnabled,
+			UnitEconomyEnabled = config.UnitEconomyEnabled,
 			Units = Units
 		};
 	}
 
 	public static NetworkUnitConfigData ToNetworkConfig(UnitConfigData config)
 	{
-		NetworkUnitConfigEntry[] Units = new NetworkUnitConfigEntry[config.Units.Count];
-
-		int i = 0;
+		List<NetworkUnitConfigEntry> Units = new List<NetworkUnitConfigEntry>(config.Units.Count);
+		
 		foreach (var kvp in config.Units)
 		{
-			Units[i] = new NetworkUnitConfigEntry
+			Units.Add(new NetworkUnitConfigEntry
 			{
 				JsonKey = kvp.Key,
 				Enabled = kvp.Value.Enabled,
 				Cost = kvp.Value.Cost ?? -1f,
 				PlayerMax = kvp.Value.PlayerMax,
 				FactionMax = kvp.Value.FactionMax
-			};
+			});
 		}
 
 		return new NetworkUnitConfigData
 		{
 			GlobalCostMultiplier = config.GlobalCostMultiplier,
-			Units = Units
+			UnitLimitsEnabled = config.UnitLimitsEnabled,
+			UnitEconomyEnabled = config.UnitEconomyEnabled,
+			Units = Units.ToArray()
 		};
 	}
 }

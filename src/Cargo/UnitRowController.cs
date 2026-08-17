@@ -1,4 +1,5 @@
 using System;
+using NOComponentWIP.ServerConfig;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class UnitRowController : MonoBehaviour
 	[SerializeField] private TextMeshProUGUI unitNameText;
 	[SerializeField] private TextMeshProUGUI unitCostText;
 	[SerializeField] private TextMeshProUGUI countText;
+	[SerializeField] private TextMeshProUGUI allocationCostText;
 	[SerializeField] private Image unitIcon;
 
 	[Header("Controls")]
@@ -33,6 +35,15 @@ public class UnitRowController : MonoBehaviour
         
 		unitNameText.text = unit.unitName;
 		unitCostText.text = $"[{unitCost}]";
+		if (UnitConfig.UnitEconomy())
+		{
+			allocationCostText.text = $"[{UnitConverter.ValueReading(UnitConfig.UnitCost(unit.JsonKey))}]";
+		}
+		else
+		{
+			allocationCostText.text = $"[N/A]";
+		}
+		
 		if (unitIcon != null) unitIcon.sprite = unit.icon;
 
 		if (plusButton != null)

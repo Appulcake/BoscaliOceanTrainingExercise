@@ -130,7 +130,7 @@ public class FOBManager : NetworkBehaviour
             if (data == null) continue;
             
             var gp = new GlobalPosition(positions[i]);
-            var spawnedObj = data.SpawnUnit(gp.ToLocalPosition(), rotations[i], Vector3.zero, aircraft, out var spawned);
+            var spawnedObj = data.SpawnUnit(gp.ToLocalPosition(), rotations[i], Vector3.zero, aircraft, true, out var spawned);
             
             if (spawned && spawnedObj != null && spawnAirbase && airbase != null)
             {
