@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace BoscaliOceanTrainingExercise;
 
+[CreateAssetMenu(fileName = "BOTEAddon", menuName = "Bote/BOTEAddon")]
 public class BOTEAddon : ScriptableObject
 {
 	[Header("Mod Info (for logging)")]
