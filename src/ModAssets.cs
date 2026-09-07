@@ -90,6 +90,7 @@ public class ModAssets : ScriptableObject
 
 		addons = Resources.FindObjectsOfTypeAll<BOTEAddon>();
 
+		Plugin.Logger.LogInfo("Found " + addons.Length + " addons");
 		foreach (var addon in addons)
 		{
 			addon.Initialize(this);

@@ -40,4 +40,10 @@ public class BOTEAddon : ScriptableObject
 			i.ActionsToAdd.Add(action);
 		}
 	}
+	
+	private void OnEnable()
+	{
+		Plugin.DebugLog($"BOTEAddon: OnEnable ({modName})");
+		hideFlags = HideFlags.DontUnloadUnusedAsset;
+	}
 }
