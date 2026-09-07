@@ -4,7 +4,7 @@ using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Systems;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 [CreateAssetMenu(fileName = "New Radial Menu", menuName = "CustomActions/RadialMenu")]
 public class RadialMenu : ScriptableObject
@@ -92,20 +92,20 @@ public class CustomMenuAction : RadialMenuAction
 
 	[HarmonyPatch(typeof(SceneSingleton<RadialMenuMain>), nameof(SceneSingleton<>.Awake))]
 	[HarmonyPostfix]
-	private static void SetupMain_Prefix(SceneSingleton<RadialMenuMain> __instance)
+	private static void Awake_Prefix(SceneSingleton<RadialMenuMain> __instance)
 	{
 		RadialMenuMain radialMenu = SceneSingleton<RadialMenuMain>.i;
 
-		if (radialMenu == null || ModAssets.i == null || ModAssets.i.actionsToAdd == null || ModAssets.i.actionsToAdd.Length == 0) 
+		if (radialMenu == null || ModAssets.i == null || ModAssets.i.ActionsToAdd == null || ModAssets.i.ActionsToAdd.Count == 0) 
 			return;
 		
 		var currentActions = radialMenu.actionsMain; 
-		if (Array.IndexOf(currentActions, ModAssets.i.actionsToAdd[0]) != -1)
+		if (Array.IndexOf(currentActions, ModAssets.i.ActionsToAdd[0]) != -1)
 			return;
 		
-		var combinedArray = new RadialMenuAction[currentActions.Length + ModAssets.i.actionsToAdd.Length];
+		var combinedArray = new RadialMenuAction[currentActions.Length + ModAssets.i.ActionsToAdd.Count];
 		currentActions.CopyTo(combinedArray, 0);
-		ModAssets.i.actionsToAdd.CopyTo(combinedArray, currentActions.Length);
+		ModAssets.i.ActionsToAdd.CopyTo(combinedArray, currentActions.Length);
 		
 		radialMenu.actionsMain = combinedArray;
 	}

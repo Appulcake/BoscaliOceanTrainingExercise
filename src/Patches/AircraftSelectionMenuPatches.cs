@@ -3,7 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(AircraftSelectionMenu))]
 public class AircraftSelectionMenuPatches

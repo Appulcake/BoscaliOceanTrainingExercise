@@ -2,7 +2,7 @@ using HarmonyLib;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch]
 public static class FOBNamePatches

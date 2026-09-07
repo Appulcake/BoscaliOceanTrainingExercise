@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using NuclearOption.SavedMission;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(FactionHQ))]
 public static class FactionHQPatches

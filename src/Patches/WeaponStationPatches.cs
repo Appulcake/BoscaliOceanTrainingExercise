@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(WeaponStation))]
 public static class WeaponStationPatches

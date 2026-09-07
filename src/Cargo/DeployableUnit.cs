@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using Mirage;
-using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class DeployableUnitComparer : IComparer<DeployableUnit>
 {

@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch]
 public static class BaseReversePatches

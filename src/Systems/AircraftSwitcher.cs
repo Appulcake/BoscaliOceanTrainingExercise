@@ -6,7 +6,7 @@ using NuclearOption.SceneLoading;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace NOComponentWIP.Systems;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 public class AircraftSwitcher : NetworkSceneSingleton<AircraftSwitcher>
 {

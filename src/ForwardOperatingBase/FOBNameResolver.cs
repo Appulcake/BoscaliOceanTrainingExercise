@@ -3,7 +3,7 @@ using System.Linq;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class FOBNameResolver
 {

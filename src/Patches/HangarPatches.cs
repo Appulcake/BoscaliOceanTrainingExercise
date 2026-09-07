@@ -3,7 +3,7 @@ using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(Hangar))]
 public static class HangarPatches

@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 using System.Collections.Generic;
 using System.Threading;

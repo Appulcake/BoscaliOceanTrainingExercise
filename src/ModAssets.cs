@@ -5,12 +5,13 @@ using Mirage;
 using NuclearOption.Networking;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 [CreateAssetMenu(fileName = "ModAssets", menuName = "Bote/ModAssets")]
 public class ModAssets : ScriptableObject
 {
 	public static Action<bool> OnInitialize;
+	public static BOTEAddon[] addons;
 
 	private bool firstInitialize = true;
 	
@@ -36,9 +37,8 @@ public class ModAssets : ScriptableObject
 	[Header("Lists")]
 	[SerializeField] private AircraftDefinition[] shipDefinitions;
 	[SerializeField] private AircraftDefinition[] shipDefinitionsWithDeployer;
-	[SerializeField] private List<DeployableUnit> allDeployableUnits;
-	
-	public RadialMenuAction[] actionsToAdd;
+	[SerializeField] private DeployableUnit[] allDeployableUnits;
+	[SerializeField] private RadialMenuAction[] actionsToAdd;
 	
 	[Header("Assets")]
 	public BuildingDefinition dockDef;
@@ -50,12 +50,12 @@ public class ModAssets : ScriptableObject
 	public GameObject CargoEditorUI;
 	public GameObject CargoEditorRow;
 	
-
 	//Runtime
 	
 	public readonly Dictionary<string, DeployableUnit> AllDeployableUnits = new();
 	public readonly HashSet<AircraftDefinition> ShipDefinitions = new();
 	public readonly HashSet<AircraftDefinition> ShipDefinitionsWithDeployer = new();
+	public readonly List<RadialMenuAction> ActionsToAdd = new();
 
 	private void Initialize()
 	{
@@ -81,6 +81,18 @@ public class ModAssets : ScriptableObject
 		foreach (var def in shipDefinitionsWithDeployer)
 		{
 			ShipDefinitionsWithDeployer.Add(def);
+		}
+
+		foreach (var action in actionsToAdd)
+		{
+			ActionsToAdd.Add(action);
+		}
+
+		addons = Resources.FindObjectsOfTypeAll<BOTEAddon>();
+
+		foreach (var addon in addons)
+		{
+			addon.Initialize(this);
 		}
 		
 		OnInitialize?.Invoke(firstInitialize);

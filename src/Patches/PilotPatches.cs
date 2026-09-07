@@ -1,7 +1,7 @@
 using HarmonyLib;
 using NuclearOption.Jobs;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(Pilot))]
 public static class PilotPatches

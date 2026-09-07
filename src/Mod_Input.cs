@@ -9,7 +9,7 @@ using Rewired;
 using Rewired.UI.ControlMapper;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 [HarmonyPatch]
 [BepInPlugin($"{MyPluginInfo.PLUGIN_GUID}.inputs",  $"{MyPluginInfo.PLUGIN_NAME}_Inputs",  MyPluginInfo.PLUGIN_VERSION)]

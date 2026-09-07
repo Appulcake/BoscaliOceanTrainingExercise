@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NOComponentWIP", "NOComponentWIP.csproj", "{999474D5-1A8A-4609-8ED6-14FF14C99B8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoscaliOceanTrainingExercise", "BoscaliOceanTrainingExercise.csproj", "{999474D5-1A8A-4609-8ED6-14FF14C99B8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

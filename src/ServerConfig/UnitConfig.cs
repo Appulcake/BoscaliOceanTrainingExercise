@@ -4,7 +4,7 @@ using System.IO;
 using BepInEx;
 using Newtonsoft.Json;
 
-namespace NOComponentWIP.ServerConfig;
+namespace BoscaliOceanTrainingExercise.ServerConfig;
 
 public class UnitConfigData
 {

@@ -1,3 +1,4 @@
+using BoscaliOceanTrainingExercise.Weapons;
 using HarmonyLib;
 using UnityEngine;
 

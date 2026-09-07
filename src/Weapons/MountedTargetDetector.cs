@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.Weapons;
 
 public class MountedTargetDetector : TargetDetector
 {

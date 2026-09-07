@@ -2,7 +2,7 @@ using HarmonyLib;
 using NuclearOption.Jobs;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(AeroPart))]
 public class AeroPartPatches

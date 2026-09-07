@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using NOComponentWIP.Systems;
+using BoscaliOceanTrainingExercise.ForwardOperatingBase;
+using BoscaliOceanTrainingExercise.Systems;
+using NOComponentWIP;
 using NuclearOption.Jobs;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class ShipPartBridge : MonoBehaviour
 {

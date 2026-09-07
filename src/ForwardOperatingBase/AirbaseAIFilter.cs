@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.ForwardOperatingBase;
 
 public class AirbaseAIFilter : MonoBehaviour
 {

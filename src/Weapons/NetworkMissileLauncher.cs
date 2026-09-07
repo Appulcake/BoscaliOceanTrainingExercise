@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using System.Threading;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class NetworkMissileLauncher : Weapon
 {

@@ -1,6 +1,6 @@
 using Mirage.Serialization;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class DeployableUnitReaderWriter
 {

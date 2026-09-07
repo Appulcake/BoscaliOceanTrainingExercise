@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class PlayerShipPropulsion : MonoBehaviour, IEngine
 {

@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(PilotPlayerState))]
 public static class PilotPlayerStatePatches

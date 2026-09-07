@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using Mirage;
-using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.ForwardOperatingBase;
 
 public class FOBManager : NetworkBehaviour
 {

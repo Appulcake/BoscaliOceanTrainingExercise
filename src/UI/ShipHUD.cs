@@ -3,13 +3,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
-using NOComponentWIP.Patches;
-using NOComponentWIP.ServerConfig;
-using NOComponentWIP.Systems;
+using BoscaliOceanTrainingExercise.ForwardOperatingBase;
+using BoscaliOceanTrainingExercise.ServerConfig;
+using BoscaliOceanTrainingExercise.Systems;
+using BoscaliOceanTrainingExercise.Patches;
 using NuclearOption.UIStyleSystem;
 using TMPro;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.UI;
 
 public class ShipHUD : HUDApp
 {

@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using BoscaliOceanTrainingExercise.ForwardOperatingBase;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using HarmonyLib;
-using NOComponentWIP.ServerConfig;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.Cargo;
 
 [HarmonyPatch(typeof(AircraftSelectionMenu))]
 public static class AircraftSelectionMenuPatch

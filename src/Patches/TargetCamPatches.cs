@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(TargetCam))]
 public static class TargetCamPatches

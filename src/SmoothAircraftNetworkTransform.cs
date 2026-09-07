@@ -1,6 +1,6 @@
 using NuclearOption.NetworkTransforms;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class SmoothAircraftNetworkTransform : AircraftNetworkTransform
 {

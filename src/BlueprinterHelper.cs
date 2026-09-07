@@ -4,7 +4,7 @@ using BepInEx.Bootstrap;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class BlueprinterHelper
 {

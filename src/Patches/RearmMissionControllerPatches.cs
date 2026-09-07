@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(RearmMissionController))]
 public static class RearmMissionControllerPatches

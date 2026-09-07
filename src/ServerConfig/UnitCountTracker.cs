@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using Mirage;
-using NOComponentWIP;
-using NOComponentWIP.ServerConfig;
+using BoscaliOceanTrainingExercise;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using NuclearOption.Networking;
 using UnityEngine;
 

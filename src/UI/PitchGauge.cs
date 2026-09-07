@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class PitchGauge : CustomAxis1Gauge
 {

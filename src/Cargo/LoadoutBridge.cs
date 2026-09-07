@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using NOComponentWIP.ServerConfig;
+using BoscaliOceanTrainingExercise.ServerConfig;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class LoadoutBridge
 {

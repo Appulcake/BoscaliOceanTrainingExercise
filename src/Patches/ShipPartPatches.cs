@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(ShipPart))]
 public class ShipPartPatches

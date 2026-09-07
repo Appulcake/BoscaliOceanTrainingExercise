@@ -2,15 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BoscaliOceanTrainingExercise.ForwardOperatingBase;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using Mirage;
 using Mirage.Collections;
 using Mirage.Serialization;
-using NOComponentWIP.ServerConfig;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class DeploymentManager : NetworkBehaviour
 {

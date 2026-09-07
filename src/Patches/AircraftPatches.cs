@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(Aircraft))]
 public class AircraftPatches

@@ -4,7 +4,7 @@ using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(Spawner))]
 public static class SpawnerPatches

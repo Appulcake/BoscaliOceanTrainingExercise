@@ -7,7 +7,7 @@ using NuclearOption.Networking;
 using NuclearOption.Networking.Authentication;
 using UnityEngine;
 
-namespace NOComponentWIP.ServerConfig;
+namespace BoscaliOceanTrainingExercise.ServerConfig;
 
 [NetworkMessage]
 public struct NetworkUnitConfigData

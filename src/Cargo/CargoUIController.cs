@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using NOComponentWIP.ServerConfig;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using NuclearOption.Networking;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class CargoUIController : MonoBehaviour
 {

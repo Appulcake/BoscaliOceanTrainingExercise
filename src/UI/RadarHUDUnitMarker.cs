@@ -2,7 +2,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.UI;
 
 [HarmonyPatch(typeof(HUDUnitMarker))]
 public class RadarHUDUnitMarker : HUDUnitMarker

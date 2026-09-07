@@ -1,8 +1,8 @@
-using NOComponentWIP.Patches;
+using BoscaliOceanTrainingExercise.Patches;
 using NuclearOption.Jobs;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class AircraftShipPart : ShipPart
 {

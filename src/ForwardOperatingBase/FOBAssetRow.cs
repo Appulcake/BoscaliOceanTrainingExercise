@@ -1,9 +1,10 @@
-using NOComponentWIP.ServerConfig;
+using BoscaliOceanTrainingExercise.ForwardOperatingBase;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class FOBAssetRow : MonoBehaviour
 {

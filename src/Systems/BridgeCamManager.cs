@@ -1,7 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Systems;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 [HarmonyPatch]
 public class BridgeCamManager : MonoBehaviour

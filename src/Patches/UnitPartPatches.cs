@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(UnitPart), nameof(UnitPart.Awake))]
 public static class UnitPartPatches

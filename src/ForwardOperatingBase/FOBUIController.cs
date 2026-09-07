@@ -1,17 +1,11 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Mirage;
-using NOComponentWIP.ServerConfig;
-using NuclearOption.ModScripts.Impl;
-using NuclearOption.Networking;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.ForwardOperatingBase;
 
 public class FOBUIController : MonoBehaviour
 {

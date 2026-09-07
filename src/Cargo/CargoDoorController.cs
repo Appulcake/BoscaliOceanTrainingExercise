@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Rewired;
 
-namespace NOComponentWIP
+namespace BoscaliOceanTrainingExercise
 {
     public class CargoDoorController : MonoBehaviour
     {

@@ -8,14 +8,14 @@ using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using BoscaliOceanTrainingExercise.ServerConfig;
+using BoscaliOceanTrainingExercise.Systems;
 using HarmonyLib;
-using NOComponentWIP.ServerConfig;
-using NOComponentWIP.Systems;
 using Rewired;
 using Rewired.UI.ControlMapper;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class MyPluginInfo
 {

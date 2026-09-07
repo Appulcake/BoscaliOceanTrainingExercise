@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 [HarmonyPatch]
 public class SmokeEjector : Countermeasure

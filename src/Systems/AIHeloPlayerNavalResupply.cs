@@ -2,7 +2,7 @@ using HarmonyLib;
 using NuclearOption.Networking;
 using UnityEngine;
 
-namespace NOComponentWIP.Systems;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 [HarmonyPatch]
 public class AIHeloPlayerNavalResupply : AIHeloTransportState

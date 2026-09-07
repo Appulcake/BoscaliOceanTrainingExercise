@@ -2,7 +2,7 @@ using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP.Patches;
+namespace BoscaliOceanTrainingExercise.Patches;
 
 [HarmonyPatch(typeof(Turret))]
 public static class TurretPatches

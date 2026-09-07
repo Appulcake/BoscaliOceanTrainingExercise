@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public static class TransformExtensions
 {

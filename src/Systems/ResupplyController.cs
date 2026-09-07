@@ -3,7 +3,7 @@ using Mirage;
 using NuclearOption.Networking;
 using UnityEngine;
 
-namespace NOComponentWIP.Systems;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 public class ResupplyController : NetworkBehaviour
 {
