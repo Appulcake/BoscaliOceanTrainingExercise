@@ -50,6 +50,10 @@ public class ModAssets : ScriptableObject
 	public GameObject CargoEditorUI;
 	public GameObject CargoEditorRow;
 	
+	
+	public GameObject ADDON_DefaultHUDPrefab;
+	public GameObject ADDON_DefaultStatusDisplay;
+	
 	//Runtime
 	
 	public readonly Dictionary<string, DeployableUnit> AllDeployableUnits = new();

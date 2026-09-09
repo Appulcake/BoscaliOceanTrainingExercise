@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
 
 namespace BoscaliOceanTrainingExercise;
@@ -24,9 +25,26 @@ public class BOTEAddon : ScriptableObject
 			i.AllDeployableUnits.TryAdd(unit?.JsonKey, unit);
 		}
 
+		var hangar = i.dockDef?.unitPrefab?.GetComponentInChildren<Hangar>();
+		
 		foreach (var def in shipDefinitions)
 		{
 			i.ShipDefinitions.Add(def);
+			
+			if (hangar != null)
+			{
+				hangar.availableAircraft = hangar.availableAircraft.AddToArray(def);
+			}
+
+			if (def.aircraftParameters?.HUDExtras == null)
+			{
+				def.aircraftParameters?.HUDExtras = i.ADDON_DefaultHUDPrefab;
+			}
+			
+			if (def.aircraftParameters?.StatusDisplay == null)
+			{
+				def.aircraftParameters?.StatusDisplay = i.ADDON_DefaultStatusDisplay;
+			}
 		}
 		Plugin.Logger.LogInfo($"[{modName}]: Loaded {shipDefinitions.Length} ships");
 
@@ -39,6 +57,7 @@ public class BOTEAddon : ScriptableObject
 		{
 			i.ActionsToAdd.Add(action);
 		}
+		
 	}
 	
 	private void OnEnable()
