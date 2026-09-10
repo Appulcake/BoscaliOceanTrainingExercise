@@ -11,6 +11,11 @@ public class HardpointPatches
 	[HarmonyPostfix]
 	private static void SpawnMount_Postfix(Aircraft aircraft, WeaponMount weaponMount, GameObject __result)
 	{
+		foreach (var water in __result.GetComponentsInChildren<WaterEffect>())
+		{
+			water.unit = aircraft;
+		}
+		
 		if (!weaponMount.turret) return;
 		foreach (var turret in __result.GetComponentsInChildren<Turret>().Skip(1))
 		{

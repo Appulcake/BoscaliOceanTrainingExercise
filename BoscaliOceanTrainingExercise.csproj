@@ -96,6 +96,8 @@
   <ItemGroup>
     <None Remove="bote_1.5.3.nobp" />
     <EmbeddedResource Include="bote_1.5.3.nobp" />
+    <None Remove="sleipnir_0.0.1.nobp" />
+    <EmbeddedResource Include="sleipnir_0.0.1.nobp" />
   </ItemGroup>
   
 </Project>
