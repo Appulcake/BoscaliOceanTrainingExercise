@@ -11,12 +11,24 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixVector3(Turret __instance)
 	{
-		if (__instance.aimSafetyWeapon is not Gun) return;
-		if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
-        
-		if (Physics.SphereCast(__instance.aimSafetyWeapon.transform.position + __instance.aimSafetyWeapon.transform.forward * 2f, 0.2f, __instance.aimSafetyWeapon.transform.forward, out _, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193))
+		if (!__instance.attachedUnit?.definition.IsShipDefinition() ?? true) return;
+		if (!__instance.attachedUnit.LocalSim) return;
+
+		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetWeapon();
+		
+		if (Physics.SphereCast(aimWeapon.transform.position + aimWeapon.transform.forward * 2f, 0.2f, aimWeapon.transform.forward, out _, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193))
 		{
-			__instance.aimSafetyWeapon.Safety = true;
+			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>()) //TODO: Speed up
+			{
+				weapon.Safety = true;
+			}
+		}
+		else
+		{
+			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			{
+				weapon.Safety = __instance.aimSafetyWeapon != null && __instance.onTarget;
+			}
 		}
 	}
     
@@ -24,13 +36,25 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixWeaponStation(Turret __instance)
 	{
-		if (__instance.aimSafetyWeapon is not Gun gun) return;
-		if (!ModAssets.i.ShipDefinitions.Contains(__instance.attachedUnit?.definition)) return;
-        
+		if (!__instance.attachedUnit?.definition.IsShipDefinition() ?? true) return;
+		if (!__instance.attachedUnit.LocalSim) return;
+		
+		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetWeapon();
+		
 		var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
-		if (Physics.SphereCast(gun.transform.position + gun.transform.forward * 2f, 0.2f, gun.transform.forward, out var hit, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
+		if (Physics.SphereCast(aimWeapon.transform.position + aimWeapon.transform.forward * 2f, 0.2f, aimWeapon.transform.forward, out var hit, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
 		{
-			__instance.aimSafetyWeapon.Safety = true;
+			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			{
+				weapon.Safety = true;
+			}
+		}
+		else
+		{
+			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			{
+				weapon.Safety = __instance.aimSafetyWeapon != null && __instance.onTarget;
+			}
 		}
 	}
 
@@ -48,10 +72,14 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void SetTarget_Postfix(Turret __instance, PersistentID id)
 	{
-		if (__instance.attachedUnit.disabled || !__instance.attachedUnit.definition.IsShipDefinition() ||!__instance.aimSafetyWeapon) return;
+		if (__instance.attachedUnit.disabled || !__instance.attachedUnit.definition.IsShipDefinition()) return;
 		if (!UnitRegistry.TryGetUnit(id, out var target)) return;
 
-		__instance.aimSafetyWeapon.SetTarget(target);
+		foreach (var weapon in __instance.weaponStations.SelectMany(w => w.Weapons))
+		{
+			weapon.SetTarget(target);
+		}
+		
 		__instance.aimSolver.SetTarget(__instance.attachedUnit, target, __instance.aimSafetyWeapon.transform, __instance.aimSafetyWeapon.info);
 	}
 }
