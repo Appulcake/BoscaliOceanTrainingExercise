@@ -23,9 +23,9 @@ public static class FactionHQPatches
             }
         }
 
-        float num2 = (float)hq.AIAircraftLimit + (float)num * hq.addAIPerEnemyPlayer - (float)count * hq.reduceAIPerFriendlyPlayer;
+        float num2 = hq.AIAircraftLimit + num * hq.addAIPerEnemyPlayer - count * hq.reduceAIPerFriendlyPlayer;
         
-        if ((float)hq.activeAIAircraft.Count >= num2)
+        if (hq.activeAIAircraft.Count >= num2)
         {
             return false;
         }
@@ -43,7 +43,7 @@ public static class FactionHQPatches
         int num3 = hq.reserveAirframes + count * hq.extraReservesPerPlayer;
         foreach (AircraftDefinition item2 in aircraft)
         {
-            if (ModAssets.i.ShipDefinitions.Contains(item2)) continue;
+            if (item2.IsShipDefinition()) continue;
             
             if (!hq.AircraftSupply.TryGetValue(item2, out var value2) || value2.Count <= num3)
             {

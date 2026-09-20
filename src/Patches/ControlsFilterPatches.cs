@@ -35,7 +35,7 @@ public static class ControlsFilterAutoHoverPatches
 			{
 				__instance.surfaceVelocity = nearestShip.rb.velocity;
 			}
-			else if (faction != null && faction.TryGetNearestAircraft(position, out var nearestAircraft, out nearestDistance, tempAircraft) && nearestDistance < 250000f && ModAssets.i.ShipDefinitions.Contains(nearestAircraft.definition))
+			else if (faction != null && faction.TryGetNearestAircraft(position, out var nearestAircraft, out nearestDistance, tempAircraft) && nearestDistance < 250000f && nearestAircraft.definition.IsShipDefinition())
 			{
 				__instance.surfaceVelocity = nearestAircraft.rb.velocity;
 			} else

@@ -9,7 +9,10 @@ public static class TargetCamPatches
 	[HarmonyPatch(nameof(TargetCam.Update))]
 	private static bool Update_Prefix(TargetCam __instance)
 	{
-		if (__instance.aircraft == null || __instance.aircraft.Player == null || !__instance.aircraft.Player.IsLocalPlayer) return false;
+		var aircraft = __instance.aircraft;
+		var player = __instance.aircraft?.Player;
+		
+		if (aircraft == null || player == null || !player.IsLocalPlayer) return false;
 
 		return true;
 	}

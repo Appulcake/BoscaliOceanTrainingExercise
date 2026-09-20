@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Mirage;
 using UnityEngine;
 using System.Linq;
@@ -38,6 +40,8 @@ public static class AircraftExtensions
 
 	public static bool TryGetShipBridge(this Aircraft aircraft, out ShipPartBridge bridge)
 	{
+		bridge = null;
+		if (!aircraft.definition.IsShipDefinition()) return false;
 		if (cache.TryGetValue(aircraft, out bridge)) return true;
 		bridge = aircraft?.GetComponent<ShipPartBridge>();
 		if (bridge != null)
@@ -116,5 +120,70 @@ public static class HQExtensions
 			}
 		}
 		return nearestAircraft != null;
+	}
+}
+
+
+//please let me use .netstandard2.1 for transpilers :(
+
+public static class DictionaryExtensions
+{
+	public static TValue GetValueOrDefault<TKey, TValue>(
+		this IDictionary<TKey, TValue> dictionary, TKey key)
+	{
+		return dictionary.TryGetValue(key, out TValue value) ? value : default(TValue);
+	}
+	
+	public static TValue GetValueOrDefault<TKey, TValue>(
+		this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+	{
+		return dictionary.TryGetValue(key, out TValue value) ? value : defaultValue;
+	}
+	
+	public static bool Remove<TKey, TValue>(
+		this IDictionary<TKey, TValue> dictionary, 
+		TKey key, 
+		out TValue value)
+	{
+		if (dictionary == null)
+		{
+			throw new System.ArgumentNullException(nameof(dictionary));
+		}
+		
+		if (dictionary.TryGetValue(key, out value))
+		{
+			return dictionary.Remove(key);
+		}
+		
+		value = default;
+		return false;
+	}
+	
+	public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+	{
+		if (dictionary == null)
+		{
+			throw new ArgumentNullException(nameof(dictionary));
+		}
+
+		if (dictionary.ContainsKey(key))
+		{
+			return false;
+		}
+
+		dictionary.Add(key, value);
+		return true;
+	}
+}
+
+public static class KeyValuePairExtensions
+{
+	public static void Deconstruct<TKey, TValue>(
+		this KeyValuePair<TKey, TValue> kvp, 
+		out TKey key, 
+		out TValue value)
+	{
+		key = kvp.Key;
+		value = kvp.Value;
 	}
 }

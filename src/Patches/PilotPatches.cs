@@ -33,7 +33,7 @@ public static class PilotPatches
 	{
 		if (pilot == null || pilot.dead || pilot.ejected) return false;
 		var aircraft = pilot.aircraft;
-		return aircraft != null && aircraft.LocalSim && aircraft.TryGetShipBridge(out _)
+		return aircraft != null && aircraft.LocalSim && aircraft.definition.IsShipDefinition()
 		       && pilot.transform.position.y < Datum.LocalSeaY - 10f;
 	}
 }

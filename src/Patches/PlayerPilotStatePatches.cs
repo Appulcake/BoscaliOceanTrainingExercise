@@ -11,21 +11,25 @@ public static class PilotPlayerStatePatches
 	{
 		if (!GameManager.flightControlsEnabled || __instance.pilotStrength < 0.2f) return;
 		if (!ModAssets.i.ShipDefinitions.Contains(__instance.pilot.aircraft.definition)) return;
+		
+		var pilot = __instance.pilot;
+		var aircraft = pilot.aircraft;
+		var player = __instance.player;
 
-		if (__instance.player.GetButton("Countermeasures") && !__instance.pilot.aircraft.countermeasureTrigger)
+		if (player.GetButton("Countermeasures") && !aircraft.countermeasureTrigger)
 		{
-			__instance.pilot.aircraft.Countermeasures(true, __instance.pilot.aircraft.countermeasureManager.activeIndex);
+			aircraft.Countermeasures(true, aircraft.countermeasureManager.activeIndex);
 		}
 
-		if (__instance.player.GetButtonDown("Gear"))
+		if (player.GetButtonDown("Gear"))
 		{
-			if (__instance.pilot.aircraft.gearState == LandingGear.GearState.LockedExtended)
+			if (aircraft.gearState == LandingGear.GearState.LockedExtended)
 			{
-				__instance.pilot.aircraft.SetGear(deployed: false);
+				aircraft.SetGear(deployed: false);
 			}
-			else if (__instance.pilot.aircraft.gearState == LandingGear.GearState.LockedRetracted)
+			else if (aircraft.gearState == LandingGear.GearState.LockedRetracted)
 			{
-				__instance.pilot.aircraft.SetGear(deployed: true);
+				aircraft.SetGear(deployed: true);
 			}
 		}
 	}

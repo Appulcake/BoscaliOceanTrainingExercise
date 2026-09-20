@@ -14,16 +14,19 @@ public class AircraftPatches
 	static bool SetSimplePhysics_Prefix(Aircraft __instance)
 	{
 		if (!__instance.TryGetShipBridge(out var bridge)) return true;
+
+		var rb = __instance.rb;
 		
 		ColorLog<Unit>.Info("Setting " + __instance.unitName + " physics to Simplified");
 		foreach (UnitPart item in __instance.partLookup)
 		{
 			(item as AeroPart)?.MergeWithParent();
 		}
-		__instance.rb.mass = __instance.definition.mass;
-		__instance.rb.ResetCenterOfMass();
-		__instance.rb.ResetInertiaTensor();
+		rb.mass = __instance.definition.mass;
+		rb.ResetCenterOfMass();
+		rb.ResetInertiaTensor();
 		__instance.simplePhysics = true;
+		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 		
 		bridge.SetSimplePhysics();
 		return false;

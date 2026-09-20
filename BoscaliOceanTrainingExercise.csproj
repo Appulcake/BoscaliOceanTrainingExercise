@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AssemblyName>Bote</AssemblyName>
     <Product>Bote</Product>
     <Version>1.5.2</Version>
@@ -96,8 +96,6 @@
   <ItemGroup>
     <None Remove="bote_1.5.3.nobp" />
     <EmbeddedResource Include="bote_1.5.3.nobp" />
-    <None Remove="sleipnir_0.0.1.nobp" />
-    <EmbeddedResource Include="sleipnir_0.0.1.nobp" />
   </ItemGroup>
   
 </Project>

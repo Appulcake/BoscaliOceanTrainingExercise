@@ -140,7 +140,7 @@ public class FOBManager : NetworkBehaviour
 
             var data = availableFOBUnits[dataIndex];
             if (data == null) continue;
-            
+
             var localCount = localCounts.GetValueOrDefault(data, 0);
             
             if (data.maxUnits >= 0 && localCount >= data.maxUnits) continue;

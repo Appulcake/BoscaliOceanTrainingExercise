@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UnityEngine;
 
@@ -7,27 +8,49 @@ namespace BoscaliOceanTrainingExercise.Patches;
 [HarmonyPatch(typeof(Turret))]
 public static class TurretPatches
 {
+	private static ConditionalWeakTable<Turret, Weapon[]> turretWeaponLookup = new();
+
+	private static void RegisterTurret(Turret turret)
+	{
+		turretWeaponLookup.Add(turret, turret.GetComponentsInChildren<Weapon>());
+	}
+
+	[HarmonyPatch(nameof(Turret.Awake))]
+	[HarmonyPostfix]
+	private static void Awake_Postfix(Turret __instance)
+	{
+		RegisterTurret(__instance);
+	}
+	
 	[HarmonyPatch(nameof(Turret.AimTurret), typeof(Vector3))]
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixVector3(Turret __instance)
 	{
-		if (!__instance.attachedUnit?.definition.IsShipDefinition() ?? true) return;
-		if (!__instance.attachedUnit.LocalSim) return;
-
-		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetWeapon();
+		var attachedUnit = __instance.attachedUnit;
 		
-		if (Physics.SphereCast(aimWeapon.transform.position + aimWeapon.transform.forward * 2f, 0.2f, aimWeapon.transform.forward, out _, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193))
+		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
+		if (!attachedUnit.LocalSim) return;
+
+		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetComponentInChildren<Weapon>();
+		var aimWeaponTransform = aimWeapon.transform;
+		var aimWeaponPosition = aimWeaponTransform.position;
+		var aimWeaponForward = aimWeapon.transform.forward;
+		
+		if (Physics.SphereCast(aimWeaponPosition + aimWeaponForward * 2f, 0.2f, aimWeaponForward, out _, attachedUnit.maxRadius * 2f, -8193))
 		{
-			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>()) //TODO: Speed up
+			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
+			foreach (var weapon in weapons)
 			{
 				weapon.Safety = true;
 			}
+
 		}
 		else
 		{
-			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
+			foreach (var weapon in weapons)
 			{
-				weapon.Safety = __instance.aimSafetyWeapon != null && __instance.onTarget;
+				weapon.Safety = __instance.aimSafetyWeapon != null && !__instance.onTarget;
 			}
 		}
 	}
@@ -36,24 +59,33 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixWeaponStation(Turret __instance)
 	{
-		if (!__instance.attachedUnit?.definition.IsShipDefinition() ?? true) return;
-		if (!__instance.attachedUnit.LocalSim) return;
+		var attachedUnit = __instance.attachedUnit;
 		
-		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetWeapon();
+		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
+		if (!attachedUnit.LocalSim) return;
+		
+		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetComponentInChildren<Weapon>();
+		var aimWeaponTransform = aimWeapon.transform;
+		var aimWeaponPosition = aimWeaponTransform.position;
+		var aimWeaponForward = aimWeapon.transform.forward;
 		
 		var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
-		if (Physics.SphereCast(aimWeapon.transform.position + aimWeapon.transform.forward * 2f, 0.2f, aimWeapon.transform.forward, out var hit, __instance.attachedUnit?.maxRadius * 2f ?? 200f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
+		
+		if (Physics.SphereCast(aimWeaponPosition + aimWeaponForward * 2f, 0.2f, aimWeaponForward, out var hit, attachedUnit.maxRadius * 2f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
 		{
-			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
+			foreach (var weapon in weapons)
 			{
 				weapon.Safety = true;
 			}
+
 		}
 		else
 		{
-			foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
+			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
+			foreach (var weapon in weapons)
 			{
-				weapon.Safety = __instance.aimSafetyWeapon != null && __instance.onTarget;
+				weapon.Safety = __instance.aimSafetyWeapon != null && !__instance.onTarget;
 			}
 		}
 	}
@@ -75,11 +107,13 @@ public static class TurretPatches
 		if (__instance.attachedUnit.disabled || !__instance.attachedUnit.definition.IsShipDefinition()) return;
 		if (!UnitRegistry.TryGetUnit(id, out var target)) return;
 
-		foreach (var weapon in __instance.weaponStations.SelectMany(w => w.Weapons))
+		foreach (var weapon in __instance.GetComponentsInChildren<Weapon>())
 		{
-			weapon.SetTarget(target);
+			weapon?.SetTarget(target);
 		}
+
+		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetComponentInChildren<Weapon>();
 		
-		__instance.aimSolver.SetTarget(__instance.attachedUnit, target, __instance.aimSafetyWeapon.transform, __instance.aimSafetyWeapon.info);
+		__instance.aimSolver.SetTarget(__instance.attachedUnit, target, aimWeapon.transform, aimWeapon.info);
 	}
 }
