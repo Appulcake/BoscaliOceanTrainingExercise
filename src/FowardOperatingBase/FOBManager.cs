@@ -123,10 +123,12 @@ public class FOBManager : NetworkBehaviour
         if (player == null) return;
         
         var localCounts = new Dictionary<FOBUnit, int>();
+        var spawnedUnits = new List<Unit>(); // track other props too for teardown when center gets destroyed
         var spawnedBuildings = new List<Building>();
         
         bool centerSpawned = false;
         Vector3 validatedCenter = center;
+        Unit centerUnit = null;
         
         float remainingAllocation = player.Allocation;
         float totalAllocationCost = 0f;
@@ -160,6 +162,7 @@ public class FOBManager : NetworkBehaviour
             
             if (!spawned || spawnedObj == null) continue;
             
+            spawnedUnits.Add(spawnedObj);
             localCounts[data] = localCount + 1;
             usedConstructionPoints += data.pointCost;
             
@@ -173,6 +176,7 @@ public class FOBManager : NetworkBehaviour
             {
                 centerSpawned = true;
                 validatedCenter = positions[i];
+                centerUnit = spawnedObj;
             }
             
             if (spawnedObj is Building building)
@@ -196,6 +200,8 @@ public class FOBManager : NetworkBehaviour
                 {
                     building.SetAirbase(airbase);
                 }
+                
+                FOBAirbaseLifecycle.Attach(airbase, centerUnit, spawnedUnits);
             }
         }
 
@@ -320,6 +326,58 @@ public class FOBManager : NetworkBehaviour
         saved.SelectionPositionWrapper.SetValue(center, saved);
         
         saved.SavedInMission = true;
+    }
+    
+    internal static void RemoveFOBAirbase(Airbase airbase, IReadOnlyCollection<Unit> members)
+    {
+        if (airbase == null) return;
+        
+        var networkManager = NetworkManagerNuclearOption.i;
+        if (networkManager == null || !networkManager.Server.Active) return;
+        
+        var saved = airbase.SavedAirbase;
+        var hq = airbase.CurrentHQ;
+        
+        // Important to disable it right away to mark it unusable while teardown is happening
+        airbase.SetDisabled(true);
+        
+        if (saved != null)
+            saved.Disabled = true;
+        
+        if (hq != null)
+        {
+            hq.RemoveAirbase(airbase);
+            airbase.SetFactionWithoutEvent(null, false);
+        }
+        
+        var mission = MissionManager.CurrentMission;
+        if (mission != null && saved != null)
+            mission.airbases.Remove(saved);
+        
+        RefreshLateJoinMission();
+        
+        var serverObjects = networkManager.ServerObjectManager;
+        
+        if (members != null)
+        {
+            var units = members.Where(unit => unit != null).Distinct().ToArray();
+            foreach (var unit in units)
+            {
+                if (unit == null) continue;
+                
+                if (!unit.disabled)
+                    unit.DisableUnit();
+                
+                if (unit != null && unit.Identity != null)
+                    serverObjects.Destroy(unit.Identity);
+            }
+        }
+        
+        if (saved != null && saved.Airbase == airbase)
+            saved.Airbase = null;
+        
+        if (airbase != null && airbase.Identity != null)
+            serverObjects.Destroy(airbase.Identity);
     }
     
     [ServerRpc]
