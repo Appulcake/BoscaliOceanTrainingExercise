@@ -13,7 +13,10 @@ public class SmokeGrenade : MonoBehaviour
 
 	private bool exploded;
 	private float detonationTime;
-
+	
+	internal static int ActiveSmokeCount { get; private set; }
+	private bool registeredAsActiveSmoke;
+	
 	private void OnEnable()
 	{
 		if (rb == null) rb = GetComponent<Rigidbody>();
@@ -67,6 +70,17 @@ public class SmokeGrenade : MonoBehaviour
 		}
 		collider.enabled = true;
 		
+		ActiveSmokeCount++;
+		registeredAsActiveSmoke = true;
+		
 		Destroy(gameObject, smokeDuration + 2f);
+	}
+	
+	private void OnDestroy()
+	{
+		if (!registeredAsActiveSmoke) return;
+		
+		ActiveSmokeCount--;
+		registeredAsActiveSmoke = false;
 	}
 }
