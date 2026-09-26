@@ -173,6 +173,14 @@ public class FOBManager : NetworkBehaviour
             {
                 centerSpawned = true;
                 validatedCenter = positions[i];
+                
+                if (spawnedObj is Scenery scenery)
+                {
+                    scenery.LinkSavedUnit(new SavedScenery
+                    {
+                        indestructible = true
+                    });
+                }
             }
             
             if (spawnedObj is Building building)

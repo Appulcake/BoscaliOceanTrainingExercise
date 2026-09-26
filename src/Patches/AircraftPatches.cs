@@ -1,6 +1,5 @@
-using System;
-using System.Linq;
-using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UnityEngine;
 
@@ -89,18 +88,26 @@ public class AircraftPatches
 
 	[HarmonyPatch(nameof(Aircraft.ReturnToInventory))]
 	[HarmonyPrefix]
-	static void ReturnToInventory_Prefix(Aircraft __instance, ref bool __state)
+	static bool ReturnToInventory_Prefix(Aircraft __instance, ref bool __state)
 	{
 		__state = false;
-		if (!__instance.IsServer) return;
+		if (!__instance.IsServer) return true;
 		var aircraft = __instance;
+		
+		if (aircraft.TryGetShipBridge(out var bridge) && bridge.UnsafeCombatDisembarkCommitted)
+		{
+			if (!aircraft.disabled)
+				aircraft.DisableUnit();
+			return false;
+		}
+		
 		if (aircraft.speed < 2f && aircraft.NetworkHQ != null && aircraft.NetworkHQ.AnyNearAirbase(aircraft.transform.position, out var airbase) && aircraft.transform.position.y > Datum.LocalSeaY)
 		{
 			var attachedUnit = airbase.attachedUnit;
-			if (attachedUnit == null) return;
-			if (aircraft.Player != null) return;
+			if (attachedUnit == null) return true;
+			if (aircraft.Player != null) return true;
 			var deployManager = attachedUnit.GetComponent<DeploymentManager>();
-			if (deployManager == null) return;
+			if (deployManager == null) return true;
 
 			if (ModAssets.i.AllDeployableUnits.TryGetValue(aircraft.definition.jsonKey, out var unit))
 			{
@@ -111,6 +118,8 @@ public class AircraftPatches
 				}
 			}
 		}
+		
+		return true;
 	}
 
 	[HarmonyPatch(nameof(Aircraft.ReturnToInventory))]
@@ -138,11 +147,16 @@ public class AircraftPatches
 	[HarmonyPrefix]
 	private static void EjectionSequence_Prefix(Aircraft __instance)
 	{
-		if (!__instance.definition.IsShipDefinition()) return;
+		if (!__instance.TryGetShipBridge(out var bridge)) return;
 		var ship = __instance;
+		bridge.UnsafeCombatDisembarkCommitted = bridge.CombatDisembarkLocked;
+		if (bridge.UnsafeCombatDisembarkCommitted || ship.NetworkHQ == null) return;
+		
 		var ab = ship.GetComponent<Airbase>();
 		
-		if ((ship.speed < 10f && ship.NetworkHQ.AnyNearAirbaseInRange(ship.transform.position, out var airbase, 2000f, ab)) && ship.NetworkHQ != null && !(ship.NetworkHQ.AnyNearAirbase(ship.transform.position, out var _) && ship.speed < 2f))
+		bool extendedSafeRecovery = ship.speed < 10f && ship.NetworkHQ.AnyNearAirbaseInRange(ship.transform.position, out _, 2000f, ab);
+		bool vanillaSafeRecovery = ship.speed < 2f && ship.NetworkHQ.AnyNearAirbase(ship.transform.position, out _);
+		if (extendedSafeRecovery && !vanillaSafeRecovery)
 		{
 			ship.ReturnToInventory();
 		}
@@ -215,5 +229,33 @@ public class AircraftPatches
 		{
 			__instance.definition.spawnOffset = __state;
 		}
+	}
+	
+	// Currently every turret on bote sends its own manual aim RPC message to server when player is in free aim mode
+	// (no target selected), which quickly saturates the RPC rate limit and the turret aiming stops with logs flooded
+	// with RPC rate limit exceeded for 'Aircraft.CmdSetTurretVector', dropping call
+	// This de-duplicates it where if a turret in a weapon station already sent an RPC this tick, the others don't need
+	// to, as on server it iterates through all turrets in a station anyway to follow this aim even if one sends it
+	private sealed class AircraftState
+	{
+		public readonly Dictionary<byte, float> LastSendFixedTime = new();
+	}
+	
+	private static readonly ConditionalWeakTable<Aircraft, AircraftState> States = new();
+	
+	[HarmonyPatch(nameof(Aircraft.SetTurretVector))]
+	[HarmonyPrefix]
+	private static bool SetTurretVector_Prefix(Aircraft __instance, byte weaponStationIndex)
+	{
+		if (__instance.IsServer || !__instance.HasAuthority || !__instance.TryGetShipBridge(out _)) return true;
+		var state = States.GetOrCreateValue(__instance);
+		var fixedTime = Time.fixedTime;
+		if (state.LastSendFixedTime.TryGetValue(weaponStationIndex, out float lastTime) && lastTime == fixedTime)
+		{
+			return false;
+		}
+		
+		state.LastSendFixedTime[weaponStationIndex] = fixedTime;
+		return true;
 	}
 }

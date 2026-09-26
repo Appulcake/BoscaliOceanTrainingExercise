@@ -17,8 +17,8 @@ public class BridgeCamManager : MonoBehaviour
 	{
 		if (stations == null) return;
 		if (stations.Length == 0) return;
-		this.transform.position = stations[0].position;
-		this.transform.rotation = stations[0].rotation;
+		if (stations[0] == null) return;
+		this.transform.SetPositionAndRotation(stations[0].position, stations[0].rotation);
 	}
 	
 	private void Update()
@@ -38,14 +38,18 @@ public class BridgeCamManager : MonoBehaviour
 
 	public void CycleCam(int direction)
 	{
+		if (stations  == null || stations.Length == 0) return;
+		
 		CameraStateManager.i?.cockpitState?.panView = 0f;
 		CameraStateManager.i?.cockpitState?.tiltView = 0f;
 		currentIndex = (currentIndex + direction + stations.Length) % stations.Length;
 		
 		//FlightHud.i?.cockpitTransform = stations[currentIndex];
 		
-		this.transform.position = stations[currentIndex].position;
-		this.transform.rotation = stations[currentIndex].rotation;
+		var station = stations[currentIndex];
+		if (stations == null) return;
+		
+		this.transform.SetPositionAndRotation(station.position, station.rotation);
 	}
 	
 	[HarmonyPostfix]
@@ -55,12 +59,14 @@ public class BridgeCamManager : MonoBehaviour
 		cam?.mainCamera?.nearClipPlane = 0.2f;
 		if (__instance.aircraft != null)
 		{
-			var camManager = __instance.aircraft.cockpitViewPoint.GetComponent<BridgeCamManager>();
-			if (camManager != null)
+			var cockpitViewPoint = __instance.aircraft?.cockpitViewPoint;
+			if (cockpitViewPoint == null) return;
+			var camManager = cockpitViewPoint.GetComponent<BridgeCamManager>();
+			if (camManager != null && camManager.stations != null && camManager.stations.Length > camManager.currentIndex
+			    && camManager.stations[camManager.currentIndex] != null)
 			{
-				__instance.aircraft.cockpitViewPoint.rotation = camManager.stations[camManager.currentIndex].rotation;
+				cockpitViewPoint.rotation = camManager.stations[camManager.currentIndex].rotation;
 			}
 		}
-		
 	}
 }

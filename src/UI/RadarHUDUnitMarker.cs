@@ -18,18 +18,28 @@ public class RadarHUDUnitMarker : HUDUnitMarker
 		radarImage.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
 		radarImage.sprite = ModAssets.i.RadarHUDIcon;
 		radar = CombatHUD.i.aircraft?.radar as Radar;
+		radarImage.raycastTarget = false; // important so you can click through these
 		radarImage.enabled = false;
 	}
 
 	private void Update()
 	{
-		if (radar == null)
+		if (radarImage == null) return;
+		
+		// Also check for image existing and being enabled, since vanilla HUDUnitMarker.UpdatePosition() on an
+		// off-screen unit only does image.enabled = false; which doesn't disable child objects (like this radarImage)
+		// and also doesn't move its position, so if a unit gets a combatHUD image and a radarImage but is off camera,
+		// the radarImage will still exist and float somewhere on UI like in center until that unit can be observed
+		// where it snaps to it
+		
+		radarImage.enabled = radar != null && image != null &&
+		                     image.enabled && !hidden && maximized &&
+		                     radar.detectedTargets.Contains(unit);
+		
+		if (radarImage.enabled)
 		{
-			radarImage?.enabled = false;
-			return;
+			radarImage.color = image.color;
 		}
-		radarImage?.enabled = !hidden && maximized && radar.detectedTargets.Contains(unit);
-		radarImage?.color = image.color;
 	}
 
 	[HarmonyPatch(nameof(HUDUnitMarker.UpdatePosition))]
