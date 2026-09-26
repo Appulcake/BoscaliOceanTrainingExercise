@@ -96,7 +96,8 @@ public class Plugin : BaseUnityPlugin
 		Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 		harmony.PatchAll();
 		SetupConfig();
-
+		
+		CombatDisembarkConfig.LoadOrCreateConfig();
 		ModAssets.OnInitialize += UnitConfig.LoadOrCreateConfig;
 		
 		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");

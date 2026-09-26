@@ -61,7 +61,7 @@ public class AIHeloPlayerNavalResupply : AIHeloTransportState
 		resupply.transportDestination.validMission = true;
 		UpdatePlayerLZ(ref resupply.transportDestination, resupply.aircraft, resupply.targetUnit);
 		resupply.transportMode = TransportMode.NavalSupply;
-		resupply.stateDisplayName = $"Delivering Naval Supplies to player: {resupply.aircraft.Player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)}";
+		resupply.stateDisplayName = $"Delivering Naval Supplies to player: {resupply.targetUnit.Player.GetDisplayName(PlayerNameContext.ChatOrLeaderboard)}";
 		return false;
 	}
 }

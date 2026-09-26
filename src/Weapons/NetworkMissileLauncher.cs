@@ -167,7 +167,7 @@ public class NetworkMissileLauncher : Weapon
                     ejectionVelocity.y * launchTransform.up +
                     ejectionVelocity.z * launchTransform.forward;
 
-                NetworkSceneSingleton<Spawner>.i.SpawnMissile(
+                Missile spawnedMissile = NetworkSceneSingleton<Spawner>.i.SpawnMissile(
                     missile,
                     launchTransform.position,
                     launchTransform.rotation,
@@ -175,6 +175,11 @@ public class NetworkMissileLauncher : Weapon
                     target,
                     owner
                 );
+                
+                if (spawnedMissile != null && owner is Aircraft aircraft)
+                {
+                    CombatDisembark.RegisterLaunch(aircraft, missile);
+                }
             }
 
             if (launchParticles != null)

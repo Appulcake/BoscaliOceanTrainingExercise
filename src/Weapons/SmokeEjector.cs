@@ -122,15 +122,20 @@ public class SmokeEjector : Countermeasure
 	[HarmonyPrefix]
 	public static bool Prefix(Unit __instance, Vector3 origin, float magnification, ref bool __result, ref RaycastHit ___hit)
 	{
-		if (FastMath.OutOfRange(origin, __instance.transform.position, __instance.visibility * magnification))
+		if (SmokeGrenade.ActiveSmokeCount <= 0)
+			return true;
+		
+		var targetPosition = __instance.transform.position;
+		
+		if (FastMath.OutOfRange(origin, targetPosition, __instance.visibility * magnification))
 		{
 			__result = false;
 			return false;
 		}
 		
-		if (Physics.Linecast(origin, __instance.transform.position, out ___hit, Mask))
+		if (Physics.Linecast(origin, targetPosition, out ___hit, Mask))
 		{
-			__result = FastMath.InRange(___hit.point, __instance.transform.position, __instance.maxRadius * 2f);
+			__result = FastMath.InRange(___hit.point, targetPosition, __instance.maxRadius * 2f);
 			return false;
 		}
 
