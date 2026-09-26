@@ -1,11 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Mirage;
 using NuclearOption.Networking;
-using NuclearOption.Networking.Authentication;
-using UnityEngine;
 
 namespace NOComponentWIP.ServerConfig;
 
@@ -57,6 +53,7 @@ public static class NetworkInitializers
 	{
 		UnitConfigSync.RegisterHandlers(__instance.server, __instance.client);
 		UnitCountTracker.RegisterHandlers(__instance.server, __instance.client);
+		CombatDisembark.RegisterHandlers(__instance.client);
 	}
 }
 

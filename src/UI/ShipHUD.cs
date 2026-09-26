@@ -1,9 +1,5 @@
-using System;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Linq;
-using NOComponentWIP.Patches;
 using NOComponentWIP.ServerConfig;
 using NOComponentWIP.Systems;
 using NuclearOption.UIStyleSystem;
@@ -249,9 +245,25 @@ public class ShipHUD : HUDApp
         if (Time.timeSinceLevelLoad > lastDisembarkRefresh + 1f)
         {
             lastDisembarkRefresh = Time.timeSinceLevelLoad;
+            
+            var combatRemaining = bridge.CombatDisembarkRemaining;
+            if (combatRemaining > 0f)
+            {
+                var totalSeconds = Mathf.CeilToInt(combatRemaining);
+                var minutes = totalSeconds / 60;
+                var seconds = totalSeconds % 60;
+                
+                disembarkText.text = $"DISEMBARK: COMBAT {minutes}:{seconds:00}";
+                disembarkText.color = alertColor;
+                return;
+            }
+            
             var ab = aircraft.GetComponent<Airbase>();
-            bool range = aircraft.NetworkHQ.AnyNearAirbaseInRange(aircraft.transform.position, out _, 2000f, ab);
-            bool speed = aircraft.speed < 10f;
+            // Reduced range from 2000 to 1500 and speed from 10 to 6 to give client desync extra grace space
+            // In MP not infrequently people would see SAFE on client and disembark only to lose ship because there can
+            // be a small delay/desync on range/velocity on server's end, so I think this might help with that
+            bool range = aircraft.NetworkHQ.AnyNearAirbaseInRange(aircraft.transform.position, out _, 1500f, ab);
+            bool speed = aircraft.speed < 6f;
             
             if (range && speed)
             {

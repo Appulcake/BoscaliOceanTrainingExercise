@@ -1,39 +1,53 @@
 using NuclearOption.NetworkTransforms;
+using UnityEngine;
 
 namespace NOComponentWIP;
 
 public class SmoothAircraftNetworkTransform : AircraftNetworkTransform
 {
 	public NetworkPIDSmoother networkSmoother;
+	private Rigidbody initializedRb;
 
 	public override void Awake()
 	{
 		base.Awake();
-
-		Aircraft.onInitialize += () =>
-		{
-			if (!base.HasAuthority)
-			{
-				networkSmoother.Initialize(Aircraft.rb);
-			}
-		};
+	}
+	
+	private bool CheckSmootherInitialized(Rigidbody rb)
+	{
+		if (rb == null || networkSmoother == null) return false;
+		if (initializedRb == rb) return true;
+		networkSmoother.Initialize(rb);
+		initializedRb = rb;
+		return true;
 	}
 
 	public override void VisualUpdate(ref VisualUpdateTime visualTime)
 	{
-		if (base.HasAuthority || Aircraft.LocalSim)
+		var validatedAircraft = Aircraft;
+		if (validatedAircraft == null)
+			return;
+		
+		if (base.HasAuthority || validatedAircraft.LocalSim)
 		{
+			initializedRb = null;
 			return;
 		}
-
+		
+		var rb = validatedAircraft.rb;
+		if (rb == null || rb.isKinematic)
+		{
+			initializedRb = null;
+			return;
+		}
+		
 		using (visualUpdateMarker.Auto())
 		{
-			if (!Aircraft.rb.isKinematic && TryGetSnapshot(ref visualTime, out var snapshot))
-			{
-				if (Aircraft.rb == null) return; //idk maybe will fix issue?
-				networkSmoother.SmoothRB(Aircraft.rb, snapshot);
-				Aircraft.CheckSpawnedInPosition();
-			}
+			if (!TryGetSnapshot(ref visualTime, out var snapshot) || !CheckSmootherInitialized(rb))
+				return;
+			
+			networkSmoother.SmoothRB(rb, snapshot);
+			validatedAircraft.CheckSpawnedInPosition();
 		}
 	}
 }

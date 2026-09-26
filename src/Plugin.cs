@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BepInEx;
@@ -11,8 +7,6 @@ using BepInEx.Logging;
 using HarmonyLib;
 using NOComponentWIP.ServerConfig;
 using NOComponentWIP.Systems;
-using Rewired;
-using Rewired.UI.ControlMapper;
 using UnityEngine;
 
 namespace NOComponentWIP;
@@ -96,7 +90,8 @@ public class Plugin : BaseUnityPlugin
 		Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 		harmony.PatchAll();
 		SetupConfig();
-
+		
+		CombatDisembarkConfig.LoadOrCreateConfig();
 		ModAssets.OnInitialize += UnitConfig.LoadOrCreateConfig;
 		
 		Logger.LogInfo("Boscali Ocean Training Exercise Loaded");

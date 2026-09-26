@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using NOComponentWIP.Systems;
 using NuclearOption.Jobs;
@@ -30,6 +28,11 @@ public class ShipPartBridge : MonoBehaviour
 	public ResupplyController resupplyController;
 	private bool musicStarted = false;
 	private float protectEnd;
+	
+	private float serverCombatDisembarkEnd;
+	private float clientCombatDisembarkEnd;
+	private float disembarkConfirmUntil;
+	public bool UnsafeCombatDisembarkCommitted { get; set; }
 	
 	public void Awake()
 	{
@@ -214,5 +217,66 @@ public class ShipPartBridge : MonoBehaviour
 			JobManager.Remove(ref part.JobPart);
 			ShipPart.DisposeJobFields(ref part.JobFields);
 		}
+	}
+	
+	public float CombatDisembarkRemaining
+	{
+		get
+		{
+			if (aircraft == null) return 0f;
+			
+			return aircraft.IsServer
+				? Mathf.Max(0f, serverCombatDisembarkEnd - Time.timeSinceLevelLoad)
+				: Mathf.Max(0f, clientCombatDisembarkEnd - Time.unscaledTime);
+		}
+	}
+	
+	public bool CombatDisembarkLocked => CombatDisembarkRemaining > 0f;
+	
+	public bool ExtendServerCombatLock(float duration, out float remaining)
+	{
+		remaining = 0f;
+		
+		if (aircraft == null || !aircraft.IsServer || duration <= 0f) return false;
+		
+		var now = Time.timeSinceLevelLoad;
+		var newEnd = now + duration;
+		
+		if (newEnd <= serverCombatDisembarkEnd)
+		{
+			remaining = Mathf.Max(0f, serverCombatDisembarkEnd - now);
+			return false;
+		}
+		
+		serverCombatDisembarkEnd = newEnd;
+		remaining = duration;
+		return true;
+	}
+	
+	public void SetClientCombatRemaining(float remaining)
+	{
+		clientCombatDisembarkEnd = Time.unscaledTime + Mathf.Max(0f, remaining);
+	}
+	
+	public void ArmDisembarkConfirmation(float duration = 10f)
+	{
+		disembarkConfirmUntil = Time.unscaledTime + duration;
+	}
+	
+	public bool ConfirmDisembarkConfirmation()
+	{
+		if (Time.unscaledTime > disembarkConfirmUntil)
+		{
+			disembarkConfirmUntil = 0f;
+			return false;
+		}
+		
+		disembarkConfirmUntil = 0f;
+		return true;
+	}
+	
+	public void ClearDisembarkConfirmation()
+	{
+		disembarkConfirmUntil = 0f;
 	}
 }
