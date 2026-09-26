@@ -20,7 +20,7 @@
   - BOTE Exclusive Radial Menu 
   - Additional keybinds under controls menu > BOTE
 - Advanced features for certain ships
-  - Most ships (excluding Surf and Shard) can deploy units of some times, be it helicopters, aircraft, or, for the OTB-31, ground vehicles.
+  - Most ships (excluding Surf and Shard) can deploy units of some types, be it helicopters, aircraft, or, for the OTB-31, ground vehicles.
   - The OTB-31 Also includes an advanced FOB building system that allows players to build a forward operating base capable of deploying aircraft.
 - Custom HUD Elements
   - Information about resupply, vehicle deployment, and if it is safe to eject from the ship.
