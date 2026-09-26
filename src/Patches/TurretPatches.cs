@@ -26,12 +26,13 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixVector3(Turret __instance)
 	{
-		var attachedUnit = __instance.attachedUnit;
+		var attachedUnit = __instance?.attachedUnit;
 		
 		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
 		if (!attachedUnit.LocalSim) return;
 
 		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetComponentInChildren<Weapon>();
+		if (aimWeapon == null) return; 
 		var aimWeaponTransform = aimWeapon.transform;
 		var aimWeaponPosition = aimWeaponTransform.position;
 		var aimWeaponForward = aimWeapon.transform.forward;
@@ -59,24 +60,25 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixWeaponStation(Turret __instance)
 	{
-		var attachedUnit = __instance.attachedUnit;
+		var attachedUnit = __instance?.attachedUnit;
 		
 		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
 		if (!attachedUnit.LocalSim) return;
 		
 		var aimWeapon = __instance.aimSafetyWeapon ?? __instance.GetComponentInChildren<Weapon>();
+		if (aimWeapon == null) return; 
 		var aimWeaponTransform = aimWeapon.transform;
 		var aimWeaponPosition = aimWeaponTransform.position;
 		var aimWeaponForward = aimWeapon.transform.forward;
 		
-		var targetDist = __instance.targetRange - (__instance.target.maxRadius + 50f);
+		var targetDist = __instance.targetRange - (__instance.target?.maxRadius + 50f) ?? 100f;
 		
 		if (Physics.SphereCast(aimWeaponPosition + aimWeaponForward * 2f, 0.2f, aimWeaponForward, out var hit, attachedUnit.maxRadius * 2f, -8193) || (hit.distance < targetDist && hit.distance > 1f))
 		{
 			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
 			foreach (var weapon in weapons)
 			{
-				weapon.Safety = true;
+				weapon?.Safety = true;
 			}
 
 		}
@@ -85,7 +87,7 @@ public static class TurretPatches
 			if (!turretWeaponLookup.TryGetValue(__instance, out Weapon[] weapons)) return;
 			foreach (var weapon in weapons)
 			{
-				weapon.Safety = __instance.aimSafetyWeapon != null && !__instance.onTarget;
+				weapon?.Safety = __instance.aimSafetyWeapon != null && !__instance.onTarget;
 			}
 		}
 	}

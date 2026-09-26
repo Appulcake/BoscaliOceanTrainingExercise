@@ -12,7 +12,7 @@ public class SequentialGun : Gun
     [Header("Sequential Configuration")]
     [SerializeField] private Muzzle[] muzzleArray;
     
-    private void FixedUpdate()
+    private new void FixedUpdate()
     {
         if (queuedBullets < 1f && Time.timeSinceLevelLoad - lastFired > fireInterval)
         {
