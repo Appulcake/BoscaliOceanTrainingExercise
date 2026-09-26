@@ -145,6 +145,33 @@ public class SequentialGun : Gun
 
         _currentMuzzleIndex = (_currentMuzzleIndex + 1) % muzzleArray.Length;
     }
+    
+    // Local firing goes via BOTE's SequentialGun.FixedUpdate() => SequentialGun.SpawnBullet() where its own 
+    // muzzleArray[current].muzzleTransform is fine, but remote clients firing goes through vanilla's
+    // WeaponStation.RemoteFireSingle() => Gun.RemoteSingleFire() => Gun.SpawnBullet() that does a Gun.muzzles[0]
+    // which returns null and causes an NRE, as it's not BOTE's muzzleArray system
+    // Override RemoteSingleFire() to be also BOTE's own, so that it too calls BOTE's own SpawnBullet() that has the
+    // correct muzzle check
+    public override void RemoteSingleFire(Unit firingUnit, Unit target, Vector3 inheritedVelocity, WeaponStation weaponStation, GlobalPosition aimpoint)
+    {
+        if (timeUntilReload > 0f || Safety)
+        {
+            return;
+        }
+        if (hardpoint != null)
+        {
+            if (hardpoint.part.IsDetached())
+            {
+                return;
+            }
+            if (info.useWeaponDoors)
+            {
+                hardpoint.SpringOpenBayDoors();
+            }
+        }
+        base.weaponStation = weaponStation;
+        SpawnBullet(0f);
+    }
 }
 
 public class Muzzle : MonoBehaviour
