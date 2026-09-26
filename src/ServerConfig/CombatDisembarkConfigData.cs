@@ -1,9 +1,10 @@
 using System;
 using System.IO;
 using BepInEx;
+using BoscaliOceanTrainingExercise.Systems;
 using Newtonsoft.Json;
 
-namespace NOComponentWIP.ServerConfig;
+namespace BoscaliOceanTrainingExercise.ServerConfig;
 
 public class CombatDisembarkConfigData
 {

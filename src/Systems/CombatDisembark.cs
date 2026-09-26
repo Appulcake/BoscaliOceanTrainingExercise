@@ -1,9 +1,9 @@
 using System.Collections.Generic;
+using BoscaliOceanTrainingExercise.ServerConfig;
 using Mirage;
-using NOComponentWIP.ServerConfig;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise.Systems;
 
 [NetworkMessage]
 public struct CombatDisembarkStateMessage

@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using NuclearOption.Networking;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 public class SequentialGun : Gun
 {

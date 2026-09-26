@@ -34,6 +34,10 @@
 - Custom inputs don't work
   - Open ConfigManager with f1 (make sure it is installed), find BoscaliOceanTrainingExercise_Inputs, and click the reset button. This will not reset your keybindings.
 
+## Credits
+- While the mod was created mainly by me, a lot of refinement, bug fixes, and features have been added by [Appulcake](https://github.com/Appulcake), so, thanks.
+- Also mitch created the game so thanks mitch, very cool.
+
 ## Showcase Images (Loading Screens):
 
 ![Loading1.png](img/Loading1.png)
