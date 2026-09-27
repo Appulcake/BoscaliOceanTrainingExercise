@@ -113,6 +113,23 @@ public static class TurretPatches
 		{
 			__instance.RegisterTargetDetector(__instance.attachedUnit.radar);
 		}
+		
+		if (__instance.weaponStations.Length <= 1) return;
+
+		List<WeaponInfo> infos = new List<WeaponInfo>();
+
+		for (int i = 1; i < __instance.weaponStations.Length; i++)
+		{
+			infos.Add(__instance.weaponStations[i].WeaponInfo);
+		}
+		
+		foreach (WeaponStation weaponStation in aircraft.weaponStations)
+		{
+			if (infos.Contains(weaponStation.WeaponInfo))
+			{
+				weaponStation.AssignTurret(__instance);
+			}
+		}
 	}
 	
 	[HarmonyPatch(nameof(Turret.SetTarget), typeof(PersistentID), typeof(byte))]
