@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace BoscaliOceanTrainingExercise.Patches;
 
-/*[HarmonyPatch(typeof(WeaponManager))]
+[HarmonyPatch(typeof(WeaponManager))]
 public class WeaponManagerPatches
 {
 	[HarmonyPatch(nameof(WeaponManager.SetActiveStation))]
@@ -17,8 +17,8 @@ public class WeaponManagerPatches
 
 		foreach (var weapon in __instance.currentWeaponStation?.Weapons ?? new List<Weapon>())
 		{
-			Turret turret = weapon.GetComponentInParent<Turret>();
-			turret.SetManual(true);
+			Turret turret = weapon?.GetComponentInParent<Turret>();
+			turret?.SetManual(true);
 		}
 	}
-}*/
+}

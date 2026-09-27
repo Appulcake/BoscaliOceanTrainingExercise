@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -39,7 +40,8 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixVector3(Turret __instance)
 	{
-		var attachedUnit = __instance?.attachedUnit;
+		if (__instance.firesWithoutAiming) return;
+		var attachedUnit = __instance.attachedUnit;
 		
 		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
 		if (!attachedUnit.LocalSim) return;
@@ -73,7 +75,8 @@ public static class TurretPatches
 	[HarmonyPostfix]
 	private static void AimTurret_PostfixWeaponStation(Turret __instance)
 	{
-		var attachedUnit = __instance?.attachedUnit;
+		if (__instance.firesWithoutAiming) return;
+		var attachedUnit = __instance.attachedUnit;
 		
 		if (!attachedUnit?.definition.IsShipDefinition() ?? true) return;
 		if (!attachedUnit.LocalSim) return;
@@ -106,21 +109,34 @@ public static class TurretPatches
 	}
 
 	[HarmonyPatch(nameof(Turret.AttachToWeaponManager))]
-	[HarmonyPostfix]
-	private static void AttachToWeaponManager_Postfix(Turret __instance, Aircraft aircraft)
+	[HarmonyPrefix]
+	private static void AttachToWeaponManager_Prefix(Turret __instance, Aircraft aircraft, ref WeaponStation[] __state)
 	{
+		__state = __instance.weaponStations;
+	}
+
+	[HarmonyPatch(nameof(Turret.AttachToWeaponManager))]
+	[HarmonyPostfix]
+	private static void AttachToWeaponManager_Postfix(Turret __instance, Aircraft aircraft, WeaponStation[] __state)
+	{
+		if (!aircraft.definition.IsShipDefinition()) return;
+		
+		Plugin.Logger.LogInfo($"[{string.Join(", ", __state.Select(w => w.WeaponInfo.weaponName))}]");
 		if (__instance.targetAcquisitionMode == Turret.TargetAcquisitionMode.parentUnitTargetDetector && __instance.attachedUnit?.radar != null)
 		{
 			__instance.RegisterTargetDetector(__instance.attachedUnit.radar);
 		}
+
+		__instance.weaponStations =
+			aircraft.weaponStations.Where(ws => __state.Select(ws => ws.WeaponInfo).Contains(ws.WeaponInfo)).ToArray();
 		
-		if (__instance.weaponStations.Length <= 1) return;
+		if (__state.Length <= 1) return;
 
 		List<WeaponInfo> infos = new List<WeaponInfo>();
 
-		for (int i = 1; i < __instance.weaponStations.Length; i++)
+		for (int i = 1; i < __state.Length; i++)
 		{
-			infos.Add(__instance.weaponStations[i].WeaponInfo);
+			infos.Add(__state[i].WeaponInfo);
 		}
 		
 		foreach (WeaponStation weaponStation in aircraft.weaponStations)
