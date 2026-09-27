@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
@@ -8,11 +9,16 @@ namespace BoscaliOceanTrainingExercise.Patches;
 [HarmonyPatch(typeof(Turret))]
 public static class TurretPatches
 {
-	private static ConditionalWeakTable<Turret, Weapon[]> turretWeaponLookup = new();
+	private static Dictionary<Turret, Weapon[]> turretWeaponLookup = new();
 
 	private static void RegisterTurret(Turret turret)
 	{
 		turretWeaponLookup.Add(turret, turret.GetComponentsInChildren<Weapon>());
+	}
+
+	private static void UnregisterTurret(Turret turret)
+	{
+		turretWeaponLookup.Remove(turret);
 	}
 
 	[HarmonyPatch(nameof(Turret.Awake))]
@@ -20,6 +26,13 @@ public static class TurretPatches
 	private static void Awake_Postfix(Turret __instance)
 	{
 		RegisterTurret(__instance);
+	}
+
+	[HarmonyPatch(nameof(Turret.OnDestroy))]
+	[HarmonyPrefix]
+	private static void OnDestroy_Prefix(Turret __instance)
+	{
+		UnregisterTurret(__instance);
 	}
 	
 	[HarmonyPatch(nameof(Turret.AimTurret), typeof(Vector3))]
