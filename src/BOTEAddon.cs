@@ -46,7 +46,7 @@ public class BOTEAddon : ScriptableObject
 				def.aircraftParameters?.StatusDisplay = i.ADDON_DefaultStatusDisplay;
 			}
 		}
-		Plugin.Logger.LogInfo($"[{modName}]: Loaded {shipDefinitions.Length} ships");
+		Plugin.Logger.LogInfo($"[{modName}]: Loaded {shipDefinitions.Length} ship(s)");
 
 		foreach (var def in shipDefinitionsWithDeployer)
 		{
