@@ -32,6 +32,13 @@
             Condition="'$(BepInExPluginsDir)' != ''" />
 
     <Copy
+            SourceFiles="$(TargetDir)$(TargetName).pdb"
+            DestinationFiles="$(BepInExPluginsDir)\$(Product)_$(Version).pdb"
+            SkipUnchangedFiles="true"
+            Condition="'$(BepInExPluginsDir)' != ''" />
+
+
+    <Copy
             SourceFiles="$(TargetPath)"
             DestinationFiles="$(UnityPluginsDir)\$(Product)$(TargetExt)"
             SkipUnchangedFiles="true"
@@ -91,11 +98,6 @@
     </Reference>
     <Reference Include="$(GameManagedDir)\UnityEngine*.dll"></Reference>
     
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="bote_1.5.3.nobp" />
-    <EmbeddedResource Include="bote_1.5.3.nobp" />
   </ItemGroup>
   
 </Project>

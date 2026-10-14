@@ -114,7 +114,7 @@ public class AircraftPatches
 
 			if (ModAssets.i.AllDeployableUnits.TryGetValue(aircraft.definition.jsonKey, out var unit))
 			{
-				if (deployManager.availableUnits.Contains(unit))
+				if (deployManager.deployableUnits.Contains(unit))
 				{
 					deployManager.AddUnit(unit);
 					__state = true;

@@ -10,6 +10,7 @@ using Mirage.Serialization;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BoscaliOceanTrainingExercise;
 
@@ -25,7 +26,7 @@ public class DeploymentManager : NetworkBehaviour
     [SerializeField] private int fobCost;
     [SerializeField] private float spawnVelocity;
     
-    public List<DeployableUnit> availableUnits;
+    [FormerlySerializedAs("availableUnits")] public List<DeployableUnit> deployableUnits;
 
     /*public readonly SyncIDictionary<DeployableUnit, int> unitManifest = 
         new(new SortedDictionary<DeployableUnit, int>(DeployableUnitComparer.Instance));*/

@@ -61,7 +61,7 @@ public class CargoUIController : MonoBehaviour
                 manifest[kvp.Key] = kvp.Value;
             }
         }
-        foreach (var unit in manager.availableUnits)
+        foreach (var unit in manager.deployableUnits)
         {
             if (unit == null) continue;
             if (unit.eventContent && !MissionManager.AllowEventContent) continue;

@@ -6,13 +6,14 @@ using Mirage;
 using NuclearOption.Networking;
 using NuclearOption.SavedMission;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BoscaliOceanTrainingExercise.ForwardOperatingBase;
 
 public class FOBManager : NetworkBehaviour
 {
     [SerializeField] private Aircraft aircraft;
-    public List<FOBUnit> availableFOBUnits;
+    [FormerlySerializedAs("availableFOBUnits")] public List<FOBUnit> deployableUnits;
     
     [SyncVar] public bool hasFob;
     
@@ -53,7 +54,7 @@ public class FOBManager : NetworkBehaviour
         fobUI = Instantiate(ModAssets.i.FOBEditorUI, canvas.transform);
         var uiController = fobUI.GetComponent<FOBUIController>();
         
-        uiController.Initialize(this, aircraft, aircraft.rb.position, availableFOBUnits, MaxConstructionPoints);
+        uiController.Initialize(this, aircraft, aircraft.rb.position, deployableUnits, MaxConstructionPoints);
         
         yield return new WaitUntil(() => !BuildingFob || aircraft.Networkdisabled); //will be changed to check when fob is done
         
@@ -100,7 +101,7 @@ public class FOBManager : NetworkBehaviour
         for (int i = 0; i < count; i++)
         {
             var unit = placedUnits[i];
-            indices[i] = availableFOBUnits.IndexOf(unit.data);
+            indices[i] = deployableUnits.IndexOf(unit.data);
             positions[i] = unit.globalPosition;
             rotations[i] = unit.rotation;
         }
@@ -136,9 +137,9 @@ public class FOBManager : NetworkBehaviour
         for (int i = 0; i < indices.Length; i++)
         {
             int dataIndex = indices[i];
-            if (dataIndex < 0 || dataIndex >= availableFOBUnits.Count) continue;
+            if (dataIndex < 0 || dataIndex >= deployableUnits.Count) continue;
 
-            var data = availableFOBUnits[dataIndex];
+            var data = deployableUnits[dataIndex];
             if (data == null) continue;
 
             var localCount = localCounts.GetValueOrDefault(data, 0);
