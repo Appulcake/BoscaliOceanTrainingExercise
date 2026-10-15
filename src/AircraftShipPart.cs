@@ -82,6 +82,13 @@ public class AircraftShipPart : ShipPart
 		    rb.angularVelocity = attachInfo.parentPart.rb.angularVelocity;
 		    rb.maxLinearVelocity = 60f;
 	    }
+
+	    foreach (var joint in joints)
+	    {
+		    joint.joint?.breakForce = 0;
+		    joint.joint?.breakTorque = 0;
+	    }
+	    
 	    /*if (breakJointStrength > 0f) // might revisit later
 	    {
 	        ConfigurableJoint configurableJoint = base.gameObject.AddComponent<ConfigurableJoint>();
@@ -122,6 +129,18 @@ public class AircraftShipPart : ShipPart
 	        }
 	    }
 	    BaseReversePatches.UnitPartDetach(this, velocity, relativePos);
+	}
+
+	private void BreakJointsToPart(UnitPart part)
+	{
+		foreach (var joint in joints)
+		{
+			if (joint.connectedPart == part)
+			{
+				joint.joint?.breakForce = 0;
+				joint.joint?.breakTorque = 0;
+			}
+		}
 	}
 
 	public override void OnDestroy()
