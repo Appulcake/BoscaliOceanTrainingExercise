@@ -194,7 +194,7 @@ public class AircraftPatches
 
 		__state = __instance.definition.spawnOffset;
 
-		if (!__instance.IsServer)
+		if (!__instance.IsServer && __instance.NetworkspawningHangar != null)
 		{
 			bool attachedUnit = __instance.NetworkspawningHangar.attachedUnit is Ship or Aircraft;
 			bool isDock = __instance.NetworkspawningHangar.attachedUnit != null && __instance.NetworkspawningHangar.attachedUnit.definition == ModAssets.i.dockDef;
