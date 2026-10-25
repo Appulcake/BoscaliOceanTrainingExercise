@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Blueprinter;
 using Cysharp.Threading.Tasks;
 using Mirage;
 using NuclearOption.Networking;
@@ -63,14 +64,21 @@ public class ModAssets : ScriptableObject
 
 	private void Initialize()
 	{
-		InitTask().Forget();
+		Blueprinter.Api.StateChanged += StateChanged;
 	}
 
-	private async UniTask InitTask()
+	private void StateChanged(Blueprinter.Api.State state)
 	{
-		Plugin.DebugLog("ModAssets Initialize Await");
-		await new WaitUntil(() => BlueprinterHelper.PatchingComplete);
+		if (state == Api.State.Ready)
+		{
+			Init();
+		}
+	}
+
+	private void Init()
+	{
 		Plugin.DebugLog("ModAssets Initialize");
+		
 		foreach (var unit in allDeployableUnits)
 		{
 			Plugin.DebugLog($"ModAssets Initialize: Unit: {unit?.JsonKey}");

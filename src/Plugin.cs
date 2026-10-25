@@ -90,8 +90,6 @@ public class Plugin : BaseUnityPlugin
 		Instance = this;
 		Logger = base.Logger;
 		
-		BlueprinterHelper.Initialize();
-		
 		InitializeMirageReaderWriters(typeof(Plugin).Assembly);
 		Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
 		harmony.PatchAll();

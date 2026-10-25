@@ -96,6 +96,9 @@
     <Reference Include="BepInEx">
       <HintPath>$(GameManagedDir)\..\..\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="com.nikkorap.blueprinter">
+      <HintPath>$(BepInExPluginsDir)/Blueprinter_2.1.0.dll</HintPath>
+    </Reference>
     <Reference Include="$(GameManagedDir)\UnityEngine*.dll"></Reference>
     
   </ItemGroup>
