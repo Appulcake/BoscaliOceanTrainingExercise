@@ -117,6 +117,7 @@ public class ModAssets : ScriptableObject
 	
 	private void OnEnable()
 	{
+		Initialize();
 		Plugin.DebugLog("ModAssets OnEnable");
 		hideFlags = HideFlags.DontUnloadUnusedAsset;
 	}
