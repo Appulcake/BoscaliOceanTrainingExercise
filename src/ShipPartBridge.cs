@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using BoscaliOceanTrainingExercise.ForwardOperatingBase;
 using BoscaliOceanTrainingExercise.Systems;
-using NOComponentWIP;
 using NuclearOption.Jobs;
 using UnityEngine;
 
