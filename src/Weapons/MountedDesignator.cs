@@ -2,7 +2,7 @@ using BoscaliOceanTrainingExercise.Weapons;
 using HarmonyLib;
 using UnityEngine;
 
-namespace NOComponentWIP;
+namespace BoscaliOceanTrainingExercise;
 
 [HarmonyPatch]
 public class MountedDesignator : Weapon
